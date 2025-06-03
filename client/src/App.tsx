@@ -29,6 +29,7 @@ function Router() {
         <Route path="/loan" component={LoanPage} />
         <Route path="/wallet" component={WalletPage} />
         <Route path="/shop" component={ShopPage} />
+        <Route path="/pet" component={PetPage} />
         <Route path="/profile/:userId" component={ProfilePage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/" component={FeedPage} />
