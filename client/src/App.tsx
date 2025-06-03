@@ -14,6 +14,7 @@ import LoanPage from "@/pages/loan";
 import ProfilePage from "@/pages/profile";
 import WalletPage from "@/pages/wallet";
 import ShopPage from "@/pages/shop";
+import PetPage from "@/pages/pet";
 
 function Router() {
   return (

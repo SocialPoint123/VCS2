@@ -1,4 +1,4 @@
-import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, loanRequests, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage, type LoanRequest, type InsertLoanRequest } from "@shared/schema";
+import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, loanRequests, shopItems, userItems, pets, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage, type LoanRequest, type InsertLoanRequest, type ShopItem, type UserItem, type Pet } from "@shared/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, or, and, sql, isNull } from "drizzle-orm";
@@ -81,6 +81,12 @@ export interface IStorage {
   purchaseItem(userId: number, itemId: number): Promise<boolean>;           // ซื้อไอเทม
   getUserItems(userId: number): Promise<UserItem[]>;                        // ดึงไอเทมของผู้ใช้
   checkUserOwnsItem(userId: number, itemId: number): Promise<boolean>;      // ตรวจสอบความเป็นเจ้าของไอเทม
+
+  // การจัดการสัตว์เลี้ยง
+  getUserPet(userId: number): Promise<Pet | undefined>;                     // ดึงข้อมูลสัตว์เลี้ยงของผู้ใช้
+  createPet(userId: number, type: string, name: string): Promise<Pet>;      // สร้างสัตว์เลี้ยงใหม่
+  updatePet(userId: number, updates: Partial<Pet>): Promise<Pet | undefined>; // อัปเดตข้อมูลสัตว์เลี้ยง
+  performPetAction(userId: number, action: string): Promise<{ pet: Pet; reward?: number; message: string }>; // ดำเนินการกับสัตว์เลี้ยง
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
@@ -775,6 +781,164 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error checking user owns item:", error);
       return false;
+    }
+  }
+
+  // การจัดการสัตว์เลี้ยง
+  async getUserPet(userId: number): Promise<any | undefined> {
+    try {
+      const result = await db.select().from(pets).where(eq(pets.userId, userId)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error getting user pet:", error);
+      return undefined;
+    }
+  }
+
+  async createPet(userId: number, type: string, name: string): Promise<any> {
+    try {
+      const result = await db.insert(pets).values({
+        userId,
+        type,
+        name,
+        energy: 100,
+        mood: 100,
+        level: 1,
+        experience: 0,
+      }).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating pet:", error);
+      throw error;
+    }
+  }
+
+  async updatePet(userId: number, updates: any): Promise<any | undefined> {
+    try {
+      const result = await db.update(pets)
+        .set(updates)
+        .where(eq(pets.userId, userId))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error updating pet:", error);
+      return undefined;
+    }
+  }
+
+  async performPetAction(userId: number, action: string): Promise<{ pet: any; reward?: number; message: string }> {
+    try {
+      const pet = await this.getUserPet(userId);
+      if (!pet) {
+        throw new Error("Pet not found");
+      }
+
+      const now = new Date();
+      let updates: any = {};
+      let reward = 0;
+      let message = "";
+
+      switch (action) {
+        case 'feed':
+          const lastFed = new Date(pet.lastFedAt);
+          const hoursSinceFed = (now.getTime() - lastFed.getTime()) / (1000 * 60 * 60);
+          
+          if (hoursSinceFed < 2) {
+            throw new Error("ต้องรอ 2 ชั่วโมงหลังจากให้อาหารครั้งล่าสุด");
+          }
+
+          const energyGain = Math.floor(Math.random() * 11) + 15; // 15-25
+          updates = {
+            energy: Math.min(100, pet.energy + energyGain),
+            lastFedAt: now,
+          };
+          message = `ให้อาหารสำเร็จ! พลังงาน +${energyGain}`;
+          break;
+
+        case 'play':
+          const lastPlayed = new Date(pet.lastPlayedAt);
+          const hoursSincePlayed = (now.getTime() - lastPlayed.getTime()) / (1000 * 60 * 60);
+          
+          if (hoursSincePlayed < 2) {
+            throw new Error("ต้องรอ 2 ชั่วโมงหลังจากเล่นครั้งล่าสุด");
+          }
+
+          const moodGain = Math.floor(Math.random() * 11) + 10; // 10-20
+          const expGain = Math.floor(Math.random() * 11) + 5; // 5-15
+          const newExp = pet.experience + expGain;
+          let newLevel = pet.level;
+
+          // เช็คเลเวลอัป
+          const expRequired = pet.level * 100;
+          if (newExp >= expRequired) {
+            newLevel = pet.level + 1;
+          }
+
+          updates = {
+            mood: Math.min(100, pet.mood + moodGain),
+            experience: newExp,
+            level: newLevel,
+            lastPlayedAt: now,
+          };
+          
+          message = `เล่นด้วยกันสำเร็จ! อารมณ์ +${moodGain}, ประสบการณ์ +${expGain}`;
+          if (newLevel > pet.level) {
+            message += ` 🎉 เลเวลอัป! เลเวล ${newLevel}`;
+          }
+          break;
+
+        case 'collect':
+          const lastCollected = new Date(pet.lastCollectedAt);
+          const hoursSinceCollected = (now.getTime() - lastCollected.getTime()) / (1000 * 60 * 60);
+          
+          if (hoursSinceCollected < 4) {
+            throw new Error("ต้องรอ 4 ชั่วโมงหลังจากเก็บเกี่ยวครั้งล่าสุด");
+          }
+
+          // คำนวณเครดิตที่ได้รับ
+          const baseAmount = 10;
+          const levelBonus = (pet.level - 1) * 5;
+          const moodMultiplier = pet.mood / 100;
+          const energyMultiplier = pet.energy / 100;
+          
+          reward = Math.floor((baseAmount + levelBonus) * moodMultiplier * energyMultiplier);
+
+          updates = {
+            lastCollectedAt: now,
+            // ลดพลังงานและอารมณ์เล็กน้อย
+            energy: Math.max(10, pet.energy - 5),
+            mood: Math.max(10, pet.mood - 5),
+          };
+
+          // เพิ่มเครดิตให้ผู้ใช้
+          const wallet = await this.getUserWallet(userId);
+          if (wallet) {
+            const newBalance = (parseFloat(wallet.balance) + reward).toFixed(2);
+            await this.updateWalletBalance(userId, newBalance);
+            
+            // บันทึกธุรกรรม
+            await this.createCreditTransaction({
+              toUserId: userId,
+              amount: reward.toString(),
+              type: "pet_collect",
+              status: "completed",
+              note: `เก็บเกี่ยวจากสัตว์เลี้ยง: ${pet.name}`,
+              balanceAfter: newBalance,
+            });
+          }
+
+          message = `เก็บเกี่ยวสำเร็จ! ได้รับ ${reward} เครดิต`;
+          break;
+
+        default:
+          throw new Error("Invalid action");
+      }
+
+      const updatedPet = await this.updatePet(userId, updates);
+      return { pet: updatedPet, reward, message };
+    } catch (error) {
+      console.error("Error performing pet action:", error);
+      throw error;
     }
   }
 }

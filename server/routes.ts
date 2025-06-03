@@ -820,5 +820,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===============================
+  // Pet System API Routes
+  // ===============================
+
+  // ดึงข้อมูลสัตว์เลี้ยงของผู้ใช้
+  app.get("/api/pet/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const pet = await storage.getUserPet(userId);
+      
+      if (!pet) {
+        return res.status(404).json({ error: "Pet not found" });
+      }
+      
+      res.json(pet);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // สร้างสัตว์เลี้ยงใหม่
+  app.post("/api/pet/create", async (req, res) => {
+    try {
+      const { userId, type, name } = req.body;
+      
+      if (!userId || !type || !name) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // ตรวจสอบว่าผู้ใช้มีสัตว์เลี้ยงแล้วหรือไม่
+      const existingPet = await storage.getUserPet(userId);
+      if (existingPet) {
+        return res.status(400).json({ error: "User already has a pet" });
+      }
+
+      const pet = await storage.createPet(userId, type, name);
+      res.json(pet);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ดำเนินการกับสัตว์เลี้ยง (ให้อาหาร, เล่น, เก็บเกี่ยว)
+  app.post("/api/pet/action", async (req, res) => {
+    try {
+      const { userId, action } = req.body;
+      
+      if (!userId || !action) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const result = await storage.performPetAction(userId, action);
+      res.json({ success: true, ...result });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  // ดึงสถิติสัตว์เลี้ยง
+  app.get("/api/pet/:userId/stats", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const pet = await storage.getUserPet(userId);
+      
+      if (!pet) {
+        return res.status(404).json({ error: "Pet not found" });
+      }
+
+      // คำนวณสถิติสัตว์เลี้ยง
+      const now = new Date();
+      const lastCollected = new Date(pet.lastCollectedAt);
+      const hoursSinceCollect = (now.getTime() - lastCollected.getTime()) / (1000 * 60 * 60);
+      
+      const canCollect = hoursSinceCollect >= 4;
+      const hoursUntilCollect = canCollect ? 0 : 4 - hoursSinceCollect;
+      
+      const baseAmount = 10;
+      const levelBonus = (pet.level - 1) * 5;
+      const moodMultiplier = pet.mood / 100;
+      const energyMultiplier = pet.energy / 100;
+      const collectAmount = Math.floor((baseAmount + levelBonus) * moodMultiplier * energyMultiplier);
+      
+      const expRequired = pet.level * 100;
+      const experienceToNext = Math.max(0, expRequired - pet.experience);
+
+      const stats = {
+        energy: pet.energy,
+        mood: pet.mood,
+        level: pet.level,
+        experience: pet.experience,
+        experienceToNext,
+        canCollect,
+        collectAmount,
+        hoursUntilCollect,
+      };
+
+      res.json(stats);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // เปลี่ยนชื่อสัตว์เลี้ยง
+  app.post("/api/pet/rename", async (req, res) => {
+    try {
+      const { userId, name } = req.body;
+      
+      if (!userId || !name) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const updatedPet = await storage.updatePet(userId, { name });
+      if (!updatedPet) {
+        return res.status(404).json({ error: "Pet not found" });
+      }
+
+      res.json(updatedPet);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
