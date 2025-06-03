@@ -72,6 +72,15 @@ export interface IStorage {
   getUserProfile(userId: number): Promise<{ user: User; wallet: CreditWallet; postsCount: number } | undefined>; // ดึงข้อมูลโปรไฟล์ผู้ใช้
   getUserPosts(userId: number): Promise<Post[]>;                            // ดึงโพสต์ของผู้ใช้
   transferCredits(fromUserId: number, toUserId: number, amount: string, note?: string): Promise<boolean>; // โอนเครดิต
+
+  // การจัดการร้านค้าและไอเทม
+  getAllShopItems(): Promise<ShopItem[]>;                                   // ดึงไอเทมทั้งหมดในร้านค้า
+  getShopItemsByType(type: string): Promise<ShopItem[]>;                    // ดึงไอเทมตามประเภท
+  getShopItemsByRarity(rarity: string): Promise<ShopItem[]>;                // ดึงไอเทมตามความหายาก
+  getShopItemById(itemId: number): Promise<ShopItem | undefined>;           // ดึงข้อมูลไอเทมเดี่ยว
+  purchaseItem(userId: number, itemId: number): Promise<boolean>;           // ซื้อไอเทม
+  getUserItems(userId: number): Promise<UserItem[]>;                        // ดึงไอเทมของผู้ใช้
+  checkUserOwnsItem(userId: number, itemId: number): Promise<boolean>;      // ตรวจสอบความเป็นเจ้าของไอเทม
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
