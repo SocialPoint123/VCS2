@@ -3,20 +3,21 @@
   "builds": [
     {
       "src": "server/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["client/dist/**"]
-      }
+      "use": "@vercel/node"
+    },
+    {
+      "src": "client/dist/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server/index.ts"
+      "dest": "server/index.ts"
     },
     {
       "src": "/(.*)",
-      "dest": "/server/index.ts"
+      "dest": "client/dist/$1"
     }
   ],
   "env": {

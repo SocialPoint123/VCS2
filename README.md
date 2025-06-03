@@ -1,277 +1,184 @@
-# BergDotBet B.B - Complete Social Platform
+# BergDotBet B.B - Advanced Multi-Feature Admin Panel
 
-เว็บไซต์โซเชียลมีเดียที่มีระบบครบครัน พร้อม Admin Panel, ระบบเครดิต, สินเชื่อ, ร้านค้า และสัตว์เลี้ยง
+An advanced multi-feature admin panel for BergDotBet B.B website, providing comprehensive user and transaction management capabilities with an innovative pet-based credit system and enhanced item inventory management.
 
-## 🚀 ฟีเจอร์หลัก
+## Features
 
-### 📊 ระบบ Admin Panel
-- Dashboard พร้อมสถิติแบบ Real-time
-- จัดการผู้ใช้และสถานะ
-- ตรวจสอบประวัติล็อกอิน
-- จัดการธุรกรรมเครดิต
-- ระบบอนุมัติคำขอสินเชื่อ
+- **Authentication System**: Secure login/register with password hashing and session management
+- **User Management**: Complete admin panel for managing users, roles, and permissions
+- **Credit System**: Advanced wallet management with transaction tracking
+- **Social Features**: Post creation, comments, likes/dislikes system
+- **Pet System**: Virtual pet management with feeding, playing, and leveling
+- **Shop System**: Item marketplace with rarity-based inventory
+- **Chat System**: Real-time messaging (public and private)
+- **Loan Management**: Credit lending system with approval workflow
+- **Real-time Analytics**: Dashboard with comprehensive statistics
 
-### 📱 ระบบ Social Media Feed
-- โพสต์ข้อความ รูปภาพ วิดีโอ และลิงก์
-- ระบบไลค์/ดิสไลค์
-- ระบบคอมเมนต์แบบ Real-time
-- การแชร์และแสดงผลอัตโนมัติ
+## Tech Stack
 
-### 💬 ระบบแชท
-- แชทสาธารณะ (Public Chat)
-- แชทส่วนตัว (Private Chat)
-- WebSocket สำหรับการส่งข้อความแบบ Real-time
-- การแจ้งเตือนข้อความใหม่
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: PostgreSQL (Supabase)
+- **ORM**: Drizzle ORM
+- **Authentication**: Custom session-based auth with bcrypt
+- **Deployment**: Vercel
 
-### 💰 ระบบสินเชื่อ
-- คำขอสินเชื่อออนไลน์
-- การคำนวณดอกเบี้ยรายชั่วโมง
-- ตรวจสอบสิทธิ์การขอสินเชื่อ
-- ระบบอนุมัติ/ปฏิเสธคำขอ
+## Quick Start
 
-### 👤 ระบบโปรไฟล์ผู้ใช้
-- ProfileCard แสดงข้อมูลผู้ใช้
-- ProfilePostsList แสดงโพสต์ของผู้ใช้
-- ระบบโอนเครดิตระหว่างผู้ใช้
-- ประวัติการทำธุรกรรม
+### 1. Database Setup (Supabase)
 
-### 💳 ระบบกระเป๋าเงิน
-- WalletBalance แสดงยอดเครดิต
-- CreditHistory ประวัติธุรกรรมทั้งหมด
-- TransferForm สำหรับโอนเครดิต
-- ระบบเติมเงิน/ถอนเงิน
+1. Create a new project at [Supabase](https://supabase.com)
+2. Go to Settings > Database
+3. Copy the connection string from "Connection string" > "Transaction pooler"
+4. Replace `[YOUR-PASSWORD]` with your database password
 
-### 🛒 ระบบร้านค้า
-- ไอเทมหลากหลายประเภท
-- ระบบความหายาก (ธรรมดา, หายาก, เอปิก, ตำนาน)
-- การซื้อด้วยเครดิต
-- ตรวจสอบไอเทมที่เป็นเจ้าของ
+### 2. Environment Variables
 
-### 🐾 ระบบสัตว์เลี้ยง
-- เลี้ยงสัตว์เลี้ยง 6 ประเภท (แมว หมา กระต่าย นก แฮมสเตอร์ ปลา)
-- ให้อาหารเพื่อเพิ่มพลังงาน (ทุก 2 ชั่วโมง)
-- เล่นเพื่อเพิ่มอารมณ์และประสบการณ์ (ทุก 2 ชั่วโมง)
-- เก็บเกี่ยวเครดิตตามสถานะ (ทุก 4 ชั่วโมง)
-- ระบบเลเวลและประสบการณ์
+Create `.env` file in the root directory:
 
-## 🛠 เทคโนโลยีที่ใช้
-
-### Frontend
-- **React** - UI Library
-- **TypeScript** - Type Safety
-- **Vite** - Build Tool
-- **Tailwind CSS** - Styling
-- **shadcn/ui** - UI Components
-- **React Query (TanStack Query)** - Data Fetching
-- **Wouter** - Routing
-- **React Hook Form** - Form Management
-- **Zod** - Schema Validation
-
-### Backend
-- **Express.js** - Web Framework
-- **TypeScript** - Type Safety
-- **Drizzle ORM** - Database ORM
-- **PostgreSQL** - Database (Supabase)
-- **WebSocket (ws)** - Real-time Communication
-- **Passport.js** - Authentication
-- **Express Session** - Session Management
-
-### Database
-- **Supabase** - PostgreSQL Database
-- **Drizzle Kit** - Database Migrations
-
-### Development Tools
-- **ESBuild** - Fast Bundling
-- **PostCSS** - CSS Processing
-- **Autoprefixer** - CSS Vendor Prefixes
-
-## 📋 ข้อกำหนดระบบ
-
-- Node.js 18+ 
-- PostgreSQL Database (Supabase)
-- Modern Web Browser with WebSocket support
-
-## 🚀 การติดตั้งและใช้งาน
-
-### 1. Clone Repository
 ```bash
-git clone https://github.com/your-username/bergdotbet-bb.git
-cd bergdotbet-bb
+# Database Configuration
+DATABASE_URL=your-supabase-connection-string
+
+# Session Secret (generate a random string)
+SESSION_SECRET=your-random-session-secret
 ```
 
-### 2. ติดตั้ง Dependencies
+### 3. Installation
+
 ```bash
+# Install dependencies
 npm install
-```
 
-### 3. ตั้งค่า Environment Variables
-สร้างไฟล์ `.env` ในโฟลเดอร์ root:
-```env
-DATABASE_URL=your_supabase_connection_string
-SESSION_SECRET=your_random_session_secret
-NODE_ENV=development
-```
+# Run database migrations (tables will be created automatically)
+npm run dev
 
-### 4. การตั้งค่า Supabase Database
-
-1. ไปที่ [Supabase Dashboard](https://supabase.com/dashboard/projects)
-2. สร้างโปรเจคใหม่
-3. ไปที่หน้า Project Settings → Database
-4. คัดลอก Connection String (Transaction pooler)
-5. แทนที่ `[YOUR-PASSWORD]` ด้วยรหัสผ่านฐานข้อมูล
-
-### 5. Run Database Migrations
-```bash
-npm run db:generate
-npm run db:migrate
-```
-
-### 6. เริ่มต้น Development Server
-```bash
+# Start development server
 npm run dev
 ```
 
-เว็บไซต์จะเปิดที่ `http://localhost:5000`
+### 4. Default Admin Account
 
-## 📁 โครงสร้างโปรเจค
+**Username**: admin  
+**Password**: admin123
 
-```
-bergdotbet-bb/
-├── client/src/
-│   ├── components/          # React Components
-│   ├── pages/              # Page Components
-│   ├── modules/            # Feature Modules
-│   ├── hooks/              # Custom Hooks
-│   └── lib/                # Utilities
-├── server/
-│   ├── index.ts            # Express Server
-│   ├── routes.ts           # API Routes
-│   ├── storage.ts          # Database Layer
-│   └── vite.ts             # Vite Integration
-├── shared/
-│   └── schema.ts           # Database Schema
-├── migrations/             # Database Migrations
-└── docs/                   # Documentation
-```
+## Deployment to Vercel
 
-## 🔧 คำสั่งที่มีประโยชน์
+### 1. Prepare for Deployment
 
 ```bash
-# Development
-npm run dev                 # เริ่ม development server
-npm run build              # Build สำหรับ production
-npm run preview            # Preview production build
+# Build the client
+npm run build
 
-# Database
-npm run db:generate        # Generate migration files
-npm run db:migrate         # Run migrations
-npm run db:studio          # Open Drizzle Studio
-
-# Type Checking
-npm run type-check         # ตรวจสอบ TypeScript
+# Commit all changes
+git add .
+git commit -m "Ready for deployment"
+git push origin main
 ```
 
-## 🚀 การ Deploy
+### 2. Deploy to Vercel
 
-### Vercel (แนะนำ)
-
-1. Push โค้ดขึ้น GitHub
-2. เชื่อมต่อ Vercel กับ GitHub Repository
-3. ตั้งค่า Environment Variables ใน Vercel:
-   - `DATABASE_URL`
-   - `SESSION_SECRET`
-4. Deploy อัตโนมัติ
-
-### Railway
-
-1. เชื่อมต่อ Railway กับ GitHub
-2. ตั้งค่า Environment Variables
+1. Connect your GitHub repository to Vercel
+2. Add environment variables in Vercel dashboard:
+   - `DATABASE_URL`: Your Supabase connection string
+   - `SESSION_SECRET`: A secure random string
 3. Deploy
 
-### Manual Deployment
+### 3. Environment Variables for Production
 
-```bash
-npm run build
-npm start
+In your Vercel dashboard, add these environment variables:
+
+```
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
+SESSION_SECRET=your-production-session-secret
+NODE_ENV=production
 ```
 
-## 🎯 API Endpoints
+## Database Schema
+
+The system automatically creates the following tables:
+
+- `users` - User accounts and authentication
+- `credit_wallets` - User wallet balances
+- `credit_transactions` - Transaction history
+- `posts` - Social media posts
+- `comments` - Post comments
+- `post_likes` - Like/dislike system
+- `messages` - Chat messages
+- `loan_requests` - Credit loan system
+- `shop_items` - Marketplace items
+- `user_items` - User inventory
+- `pets` - Virtual pet system
+- `login_logs` - Security audit logs
+
+## API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - เข้าสู่ระบบ
-- `POST /api/auth/logout` - ออกจากระบบ
-- `GET /api/admin/auth` - ตรวจสอบสถานะล็อกอิน
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - User logout
 
-### Admin
-- `GET /api/admin/dashboard-stats` - สถิติ Dashboard
-- `GET /api/admin/users` - รายชื่อผู้ใช้
-- `PUT /api/admin/users/:id/status` - อัปเดตสถานะผู้ใช้
+### User Management
+- `GET /api/admin/users` - Get all users (admin)
+- `GET /api/admin/dashboard-stats` - System statistics (admin)
+- `GET /api/profile/:userId` - User profile
 
-### Posts
-- `GET /api/posts` - ดึงโพสต์ทั้งหมด
-- `POST /api/posts` - สร้างโพสต์ใหม่
-- `GET /api/posts/:id` - ดึงโพสต์เดี่ยว
-- `DELETE /api/posts/:id` - ลบโพสต์
+### Social Features
+- `GET /api/posts` - Get all posts
+- `POST /api/posts` - Create new post
+- `POST /api/posts/:id/like` - Like/dislike post
+- `GET /api/posts/:id/comments` - Get post comments
 
-### Comments
-- `GET /api/posts/:postId/comments` - ดึงคอมเมนต์
-- `POST /api/posts/:postId/comments` - เพิ่มคอมเมนต์
+### Wallet & Transactions
+- `GET /api/wallet/:userId` - Get user wallet
+- `POST /api/wallet/top-up` - Request credit top-up
+- `GET /api/transactions/:userId` - Transaction history
 
-### Likes
-- `POST /api/posts/:postId/like` - ไลค์/ดิสไลค์
+### Shop & Inventory
+- `GET /api/shop/items` - Get shop items
+- `POST /api/shop/purchase` - Purchase item
+- `GET /api/inventory/:userId` - User inventory
 
-### Wallet
-- `GET /api/wallet/:userId` - ดึงข้อมูลกระเป๋าเงิน
-- `GET /api/wallet/:userId/transactions` - ประวัติธุรกรรม
-- `POST /api/wallet/transfer` - โอนเครดิต
+### Pet System
+- `GET /api/pet/:userId` - Get user pet
+- `POST /api/pet/create` - Create new pet
+- `POST /api/pet/:userId/action` - Pet interaction
 
-### Shop
-- `GET /api/shop/items` - ดึงไอเทมร้านค้า
-- `POST /api/shop/purchase` - ซื้อไอเทม
-- `GET /api/shop/user-items/:userId` - ไอเทมของผู้ใช้
+## Security Features
 
-### Pet
-- `GET /api/pet/:userId` - ดึงข้อมูลสัตว์เลี้ยง
-- `POST /api/pet/create` - สร้างสัตว์เลี้ยงใหม่
-- `POST /api/pet/action` - ดำเนินการกับสัตว์เลี้ยง
+- **Password Hashing**: bcrypt with salt rounds
+- **Session Management**: Secure session-based authentication
+- **XSS Protection**: Input sanitization and output encoding
+- **SQL Injection Prevention**: Parameterized queries with Drizzle ORM
+- **Authentication Middleware**: Protected routes with proper authorization
 
-## 🔒 การรักษาความปลอดภัย
+## Development
 
-- Session-based Authentication
-- Password Hashing (bcrypt)
-- SQL Injection Protection (Drizzle ORM)
-- XSS Protection
-- CSRF Protection
-- Environment Variable Security
+```bash
+# Start development server
+npm run dev
 
-## 🧪 การทดสอบ
+# Build for production
+npm run build
 
-ระบบมีข้อมูลตัวอย่างพร้อมใช้งาน:
+# Database operations
+npm run db:generate  # Generate migrations
+npm run db:push      # Push schema changes
+```
 
-### ผู้ใช้ Admin
-- Username: `admin`
-- Password: `password`
+## Contributing
 
-### ผู้ใช้ทั่วไป
-- Username: `user1` / Password: `password`
-- Username: `user2` / Password: `password`
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-## 🤝 การมีส่วนร่วม
+## License
 
-1. Fork Repository
-2. สร้าง Feature Branch (`git checkout -b feature/amazing-feature`)
-3. Commit การเปลี่ยนแปลง (`git commit -m 'Add amazing feature'`)
-4. Push ไปยัง Branch (`git push origin feature/amazing-feature`)
-5. เปิด Pull Request
+Private - BergDotBet B.B Internal Use Only
 
-## 📄 License
+## Support
 
-MIT License - ดูไฟล์ LICENSE สำหรับรายละเอียด
-
-## 📞 การติดต่อ
-
-หากมีคำถามหรือปัญหา กรุณาสร้าง Issue ใน GitHub Repository
-
----
-
-**BergDotBet B.B** - Social Platform ที่ครบครันที่สุด พร้อมระบบการเงินและเกมสัตว์เลี้ยง 🚀
+For support and questions, contact the development team.
