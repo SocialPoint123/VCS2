@@ -15,6 +15,13 @@
       "when": 1748937883628,
       "tag": "0001_powerful_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748940647510,
+      "tag": "0002_lumpy_captain_britain",
+      "breakpoints": true
     }
   ]
 }
