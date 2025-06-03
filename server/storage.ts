@@ -114,7 +114,7 @@ export class DatabaseStorage implements IStorage {
   async initializeData() {
     // ตรวจสอบว่ามี admin user อยู่แล้วหรือไม่
     const existingAdmin = await this.getUserByUsername("admin");
-    
+
     if (!existingAdmin) {
       // Create admin user
       const adminUser = await this.createUser({
@@ -327,10 +327,10 @@ export class DatabaseStorage implements IStorage {
     const totalUsersResult = await db.select().from(users);
     const totalUsers = totalUsersResult.length;
     const onlineUsers = Math.floor(totalUsers * 0.4); // Mock online users as 40% of total
-    
+
     const walletsResult = await db.select().from(creditWallets);
     const totalCredits = walletsResult.reduce((sum, wallet) => sum + parseFloat(wallet.balance), 0).toFixed(2);
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayTransactionsResult = await db.select().from(creditTransactions);
@@ -435,7 +435,7 @@ export class DatabaseStorage implements IStorage {
   async togglePostLike(like: InsertPostLike): Promise<PostLike | null> {
     // ตรวจสอบว่าผู้ใช้เคยไลค์โพสต์นี้แล้วหรือไม่
     const existingLike = await this.getUserPostLike(like.postId, like.userId);
-    
+
     if (existingLike) {
       if (existingLike.type === like.type) {
         // ถ้าไลค์แบบเดียวกัน ให้ลบออก
@@ -596,7 +596,7 @@ export class DatabaseStorage implements IStorage {
       const postsResult = await db.select({ count: sql`count(*)`.as('count') })
         .from(posts)
         .where(eq(posts.userId, userId));
-      
+
       const postsCount = Number(postsResult[0]?.count) || 0;
 
       return { user, wallet, postsCount };
@@ -787,7 +787,7 @@ export class DatabaseStorage implements IStorage {
         .where(and(eq(userItems.userId, userId), eq(userItems.itemId, itemId)))
         .limit(1);
       return result.length > 0;
-    } catch (error) {
+    } catch (error){
       console.error("Error checking user owns item:", error);
       return false;
     }
@@ -905,7 +905,7 @@ export class DatabaseStorage implements IStorage {
         case 'feed':
           const lastFed = new Date(pet.lastFedAt);
           const hoursSinceFed = (now.getTime() - lastFed.getTime()) / (1000 * 60 * 60);
-          
+
           if (hoursSinceFed < 2) {
             throw new Error("ต้องรอ 2 ชั่วโมงหลังจากให้อาหารครั้งล่าสุด");
           }
@@ -921,7 +921,7 @@ export class DatabaseStorage implements IStorage {
         case 'play':
           const lastPlayed = new Date(pet.lastPlayedAt);
           const hoursSincePlayed = (now.getTime() - lastPlayed.getTime()) / (1000 * 60 * 60);
-          
+
           if (hoursSincePlayed < 2) {
             throw new Error("ต้องรอ 2 ชั่วโมงหลังจากเล่นครั้งล่าสุด");
           }
@@ -943,7 +943,7 @@ export class DatabaseStorage implements IStorage {
             level: newLevel,
             lastPlayedAt: now,
           };
-          
+
           message = `เล่นด้วยกันสำเร็จ! อารมณ์ +${moodGain}, ประสบการณ์ +${expGain}`;
           if (newLevel > pet.level) {
             message += ` 🎉 เลเวลอัป! เลเวล ${newLevel}`;
@@ -953,7 +953,7 @@ export class DatabaseStorage implements IStorage {
         case 'collect':
           const lastCollected = new Date(pet.lastCollectedAt);
           const hoursSinceCollected = (now.getTime() - lastCollected.getTime()) / (1000 * 60 * 60);
-          
+
           if (hoursSinceCollected < 4) {
             throw new Error("ต้องรอ 4 ชั่วโมงหลังจากเก็บเกี่ยวครั้งล่าสุด");
           }
@@ -963,7 +963,7 @@ export class DatabaseStorage implements IStorage {
           const levelBonus = (pet.level - 1) * 5;
           const moodMultiplier = pet.mood / 100;
           const energyMultiplier = pet.energy / 100;
-          
+
           reward = Math.floor((baseAmount + levelBonus) * moodMultiplier * energyMultiplier);
 
           updates = {
@@ -978,7 +978,7 @@ export class DatabaseStorage implements IStorage {
           if (wallet) {
             const newBalance = (parseFloat(wallet.balance) + reward).toFixed(2);
             await this.updateWalletBalance(userId, newBalance);
-            
+
             // บันทึกธุรกรรม
             await this.createCreditTransaction({
               toUserId: userId,
@@ -1062,7 +1062,7 @@ export class DatabaseStorage implements IStorage {
 
       // ปิดการทำงานของระบบ activation ไว้ชั่วคราว
       console.log(`[MAINTENANCE] Item activation disabled: User ${userId}, Item ${itemId}, Type ${type}`);
-      
+
       // ส่งกลับสำเร็จเพื่อไม่ให้ frontend error
       return true;
     } catch (error) {
