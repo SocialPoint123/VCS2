@@ -662,6 +662,121 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // การจัดการร้านค้าและไอเทม
+  async getAllShopItems(): Promise<any[]> {
+    try {
+      return await db.select().from(shopItems).where(eq(shopItems.isAvailable, true));
+    } catch (error) {
+      console.error("Error getting shop items:", error);
+      return [];
+    }
+  }
+
+  async getShopItemsByType(type: string): Promise<any[]> {
+    try {
+      return await db.select()
+        .from(shopItems)
+        .where(and(eq(shopItems.type, type), eq(shopItems.isAvailable, true)));
+    } catch (error) {
+      console.error("Error getting shop items by type:", error);
+      return [];
+    }
+  }
+
+  async getShopItemsByRarity(rarity: string): Promise<any[]> {
+    try {
+      return await db.select()
+        .from(shopItems)
+        .where(and(eq(shopItems.rarity, rarity), eq(shopItems.isAvailable, true)));
+    } catch (error) {
+      console.error("Error getting shop items by rarity:", error);
+      return [];
+    }
+  }
+
+  async getShopItemById(itemId: number): Promise<any | undefined> {
+    try {
+      const result = await db.select().from(shopItems).where(eq(shopItems.id, itemId)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error getting shop item by id:", error);
+      return undefined;
+    }
+  }
+
+  async purchaseItem(userId: number, itemId: number): Promise<boolean> {
+    try {
+      // ตรวจสอบไอเทม
+      const item = await this.getShopItemById(itemId);
+      if (!item || !item.isAvailable) return false;
+
+      // ตรวจสอบว่าผู้ใช้มีไอเทมแล้วหรือไม่
+      const ownsItem = await this.checkUserOwnsItem(userId, itemId);
+      if (ownsItem) return false;
+
+      // ตรวจสอบยอดเงิน
+      const wallet = await this.getUserWallet(userId);
+      if (!wallet) return false;
+
+      const currentBalance = parseFloat(wallet.balance);
+      const itemPrice = parseFloat(item.price);
+      if (currentBalance < itemPrice) return false;
+
+      // หักเงิน
+      const newBalance = (currentBalance - itemPrice).toFixed(2);
+      await this.updateWalletBalance(userId, newBalance);
+
+      // เพิ่มไอเทมให้ผู้ใช้
+      await db.insert(userItems).values({ userId, itemId });
+
+      // บันทึกธุรกรรม
+      await this.createCreditTransaction({
+        fromUserId: userId,
+        amount: `-${itemPrice}`,
+        type: "purchase",
+        status: "completed",
+        note: `ซื้อไอเทม: ${item.name}`,
+        balanceAfter: newBalance,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error purchasing item:", error);
+      return false;
+    }
+  }
+
+  async getUserItems(userId: number): Promise<any[]> {
+    try {
+      return await db.select({
+        id: userItems.id,
+        userId: userItems.userId,
+        itemId: userItems.itemId,
+        createdAt: userItems.createdAt,
+        item: shopItems
+      })
+      .from(userItems)
+      .leftJoin(shopItems, eq(userItems.itemId, shopItems.id))
+      .where(eq(userItems.userId, userId));
+    } catch (error) {
+      console.error("Error getting user items:", error);
+      return [];
+    }
+  }
+
+  async checkUserOwnsItem(userId: number, itemId: number): Promise<boolean> {
+    try {
+      const result = await db.select()
+        .from(userItems)
+        .where(and(eq(userItems.userId, userId), eq(userItems.itemId, itemId)))
+        .limit(1);
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error checking user owns item:", error);
+      return false;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

@@ -146,6 +146,35 @@ export const insertLoanRequestSchema = createInsertSchema(loanRequests).omit({
   rejectedAt: true,
 });
 
+export const shopItems = pgTable("shop_items", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  rarity: text("rarity").default("common"),
+  description: text("description"),
+  mediaUrl: text("media_url"),
+  isAvailable: boolean("is_available").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userItems = pgTable("user_items", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  itemId: integer("item_id").notNull().references(() => shopItems.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertShopItemSchema = createInsertSchema(shopItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserItemSchema = createInsertSchema(userItems).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -167,3 +196,9 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 export type LoanRequest = typeof loanRequests.$inferSelect;
 export type InsertLoanRequest = z.infer<typeof insertLoanRequestSchema>;
+
+export type ShopItem = typeof shopItems.$inferSelect;
+export type InsertShopItem = z.infer<typeof insertShopItemSchema>;
+
+export type UserItem = typeof userItems.$inferSelect;
+export type InsertUserItem = z.infer<typeof insertUserItemSchema>;

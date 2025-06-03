@@ -13,6 +13,7 @@ import PrivateChatPage from "@/pages/chat/[userId]";
 import LoanPage from "@/pages/loan";
 import ProfilePage from "@/pages/profile";
 import WalletPage from "@/pages/wallet";
+import ShopPage from "@/pages/shop";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
         <Route path="/chat/:userId" component={PrivateChatPage} />
         <Route path="/loan" component={LoanPage} />
         <Route path="/wallet" component={WalletPage} />
+        <Route path="/shop" component={ShopPage} />
         <Route path="/profile/:userId" component={ProfilePage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/" component={FeedPage} />
