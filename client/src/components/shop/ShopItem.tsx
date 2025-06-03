@@ -156,12 +156,6 @@ export default function ShopItem({ item, userId }: ShopItemProps) {
                   // แสดง placeholder ถ้าโหลดรูปไม่ได้
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
-                  target.parentElement!.innerHTML = `
-                    <div class="flex flex-col items-center justify-center text-gray-400 space-y-2">
-                      <div class="text-4xl">${item.type === 'theme' ? '🎨' : item.type === 'icon' ? '⭐' : item.type === 'badge' ? '🏆' : '🖼️'}</div>
-                      <span class="text-xs">${item.name}</span>
-                    </div>
-                  `;
                 }}
               />
             ) : (
