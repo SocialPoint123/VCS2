@@ -7,7 +7,7 @@
     },
     {
       "src": "server/index.ts",
-      "use": "@vercel/node@3.0.0"
+      "use": "@vercel/node@2.0.0"
     }
   ],
   "routes": [
@@ -20,7 +20,9 @@
       "dest": "/client/dist/$1"
     }
   ],
-  "env": {
-    "NODE_OPTIONS": "--max-old-space-size=4096"
+  "functions": {
+    "server/index.ts": {
+      "maxDuration": 30
+    }
   }
 }
