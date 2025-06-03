@@ -15,6 +15,7 @@ import ProfilePage from "@/pages/profile";
 import WalletPage from "@/pages/wallet";
 import ShopPage from "@/pages/shop";
 import PetPage from "@/pages/pet";
+import ShopManagement from "@/pages/admin/shop-management";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <NavigationBar />
       <Switch>
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/shop" component={ShopManagement} />
         <Route path="/feed" component={FeedPage} />
         <Route path="/post/:id" component={ViewPostPage} />
         <Route path="/chat" component={PublicChatPage} />

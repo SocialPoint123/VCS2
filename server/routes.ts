@@ -942,5 +942,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===============================
+  // Admin Shop Management API Routes
+  // ===============================
+
+  // ดึงสินค้าทั้งหมดสำหรับแอดมิน (รวมที่ซ่อน)
+  app.get("/api/admin/shop/items", async (req, res) => {
+    try {
+      const items = await storage.getAllShopItemsAdmin();
+      res.json(items);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // เพิ่มสินค้าใหม่
+  app.post("/api/admin/shop/items", async (req, res) => {
+    try {
+      const { name, description, price, type, rarity, imageUrl } = req.body;
+      
+      if (!name || !price) {
+        return res.status(400).json({ error: "Name and price are required" });
+      }
+
+      const item = await storage.createShopItem({
+        name,
+        description,
+        price,
+        type: type || "item",
+        rarity: rarity || "common",
+        imageUrl
+      });
+
+      res.json(item);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // อัปเดตสินค้า
+  app.put("/api/admin/shop/items/:itemId", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      const updates = req.body;
+
+      if (isNaN(itemId)) {
+        return res.status(400).json({ error: "Invalid item ID" });
+      }
+
+      const updatedItem = await storage.updateShopItem(itemId, updates);
+      if (!updatedItem) {
+        return res.status(404).json({ error: "Item not found" });
+      }
+
+      res.json(updatedItem);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // เปิด/ปิดการแสดงสินค้า
+  app.put("/api/admin/shop/items/:itemId/toggle", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      const { isActive } = req.body;
+
+      if (isNaN(itemId)) {
+        return res.status(400).json({ error: "Invalid item ID" });
+      }
+
+      const updatedItem = await storage.toggleShopItemStatus(itemId, isActive);
+      if (!updatedItem) {
+        return res.status(404).json({ error: "Item not found" });
+      }
+
+      res.json(updatedItem);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
