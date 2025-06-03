@@ -55,7 +55,7 @@ export default function ShopManagement() {
     name: "",
     description: "",
     price: "",
-    type: "electronics",
+    type: "theme",
     rarity: "common",
     imageUrl: "",
   });
@@ -121,7 +121,7 @@ export default function ShopManagement() {
         name: "",
         description: "",
         price: "",
-        type: "electronics",
+        type: "theme",
         rarity: "common",
         imageUrl: "",
       });
@@ -190,10 +190,15 @@ export default function ShopManagement() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "electronics": return "bg-green-100 text-green-800";
-      case "gaming": return "bg-red-100 text-red-800";
-      case "fashion": return "bg-pink-100 text-pink-800";
-      case "service": return "bg-orange-100 text-orange-800";
+      case "theme": return "bg-purple-100 text-purple-800";
+      case "font": return "bg-blue-100 text-blue-800";
+      case "post_frame": return "bg-green-100 text-green-800";
+      case "profile_frame": return "bg-yellow-100 text-yellow-800";
+      case "emoji": return "bg-pink-100 text-pink-800";
+      case "sticker": return "bg-orange-100 text-orange-800";
+      case "effect": return "bg-red-100 text-red-800";
+      case "badge": return "bg-indigo-100 text-indigo-800";
+      case "background": return "bg-teal-100 text-teal-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -437,10 +442,15 @@ export default function ShopManagement() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="electronics">อิเล็กทรอนิกส์</SelectItem>
-                      <SelectItem value="gaming">เกมมิ่ง</SelectItem>
-                      <SelectItem value="fashion">แฟชั่น</SelectItem>
-                      <SelectItem value="service">บริการ</SelectItem>
+                      <SelectItem value="theme">ธีม</SelectItem>
+                      <SelectItem value="font">ฟอนต์</SelectItem>
+                      <SelectItem value="post_frame">กรอบโพสต์</SelectItem>
+                      <SelectItem value="profile_frame">กรอบโปรไฟล์</SelectItem>
+                      <SelectItem value="emoji">อิโมจิ</SelectItem>
+                      <SelectItem value="sticker">สติกเกอร์</SelectItem>
+                      <SelectItem value="effect">เอฟเฟกต์</SelectItem>
+                      <SelectItem value="badge">แบดจ์</SelectItem>
+                      <SelectItem value="background">พื้นหลัง</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
