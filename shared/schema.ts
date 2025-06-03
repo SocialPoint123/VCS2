@@ -51,8 +51,9 @@ export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   content: text("content").notNull(),
-  mediaUrl: text("media_url"), // URL รูปภาพ/วิดีโอ/ลิงก์
-  mediaType: text("media_type"), // "image", "video", "link"
+  mediaUrl: text("media_url"),
+  imageUrl: text("image_url"),
+  mediaType: text("media_type"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
