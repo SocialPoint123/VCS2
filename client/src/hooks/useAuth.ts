@@ -2,114 +2,122 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// ประเภทข้อมูลผู้ใช้งาน
 export interface User {
-  id: number;
-  username: string;
-  email: string;
-  name: string;
-  status: string;
-  isAdmin: boolean;
-  createdAt: string;
+  id: number;                    // รหัสผู้ใช้
+  username: string;              // ชื่อผู้ใช้
+  email: string;                 // อีเมล
+  name: string;                  // ชื่อ-นามสกุล
+  status: string;                // สถานะ (active, suspended, banned)
+  isAdmin: boolean;              // สิทธิ์แอดมิน
+  createdAt: string;             // วันที่สร้างบัญชี
 }
 
+// ประเภทข้อมูลผู้ใช้ที่มี session
 export interface AuthUser {
-  user: User;
-  sessionId?: string;
+  user: User;                    // ข้อมูลผู้ใช้
+  sessionId?: string;            // รหัส session (ถ้ามี)
 }
 
 /**
- * Hook สำหรับจัดการ authentication state
- * รองรับการเข้าสู่ระบบ ออกจากระบบ และตรวจสอบสถานะ
+ * Hook สำหรับจัดการสถานะการยืนยันตัวตน
+ * รองรับการเข้าสู่ระบบ ออกจากระบบ และตรวจสอบสถานะการล็อกอิน
+ * ใช้ localStorage และ server validation เพื่อความปลอดภัย
  */
 export function useAuth() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // ดึงข้อมูล user ปัจจุบันจาก localStorage และ server
+  // ดึงข้อมูลผู้ใช้ปัจจุบันจาก localStorage และตรวจสอบกับเซิร์ฟเวอร์
   const { data: currentUser, isLoading, error } = useQuery({
     queryKey: ["/api/auth/me"],
     queryFn: async () => {
-      // ตรวจสอบ localStorage ก่อน
+      // ตรวจสอบข้อมูลใน localStorage ก่อน
       const stored = localStorage.getItem("currentUser");
       if (!stored) {
-        return null;
+        return null; // ไม่มีข้อมูลการล็อกอิน
       }
 
       try {
         const parsedUser = JSON.parse(stored);
         
-        // ถ้ามี sessionId ให้ตรวจสอบกับ server
+        // หากมี sessionId ให้ตรวจสอบความถูกต้องกับเซิร์ฟเวอร์
         if (parsedUser.sessionId) {
           const serverUser = await apiRequest("/api/auth/me");
-          return serverUser;
+          return serverUser; // ส่งคืนข้อมูลจากเซิร์ฟเวอร์
         }
         
-        // ถ้าไม่มี sessionId ให้ใช้ข้อมูลจาก localStorage
+        // หากไม่มี sessionId ให้ใช้ข้อมูลที่เก็บไว้ใน localStorage
         return parsedUser;
       } catch (error) {
-        // ถ้า server ตอบว่า unauthorized ให้ลบ localStorage
+        // หากเซิร์ฟเวอร์ตอบว่า unauthorized ให้ลบข้อมูลออกจาก localStorage
         localStorage.removeItem("currentUser");
         return null;
       }
     },
     retry: false,
-    staleTime: 5 * 60 * 1000, // Cache เป็นเวลา 5 นาที
+    staleTime: 5 * 60 * 1000, // เก็บข้อมูลในแคชเป็นเวลา 5 นาที
   });
 
-  // ฟังก์ชันออกจากระบบ
+  // ฟังก์ชันสำหรับออกจากระบบ
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      // ส่งคำขอออกจากระบบไปยังเซิร์ฟเวอร์
       await apiRequest("/api/auth/logout", {
         method: "POST",
       });
     },
     onSuccess: () => {
-      // ลบข้อมูลจาก localStorage
+      // ลบข้อมูลผู้ใช้ออกจาก localStorage
       localStorage.removeItem("currentUser");
       
-      // Clear cache
+      // ล้างข้อมูลแคชทั้งหมด
       queryClient.clear();
       
+      // แสดงข้อความยืนยันการออกจากระบบ
       toast({
         title: "ออกจากระบบสำเร็จ",
         description: "ขอบคุณที่ใช้บริการ",
       });
 
-      // รีเฟรชหน้าเพื่อไปที่หน้า login
+      // เปลี่ยนเส้นทางไปหน้าล็อกอิน
       window.location.href = "/login";
     },
     onError: (error: any) => {
-      // แม้ logout ผิดพลาดก็ให้ลบข้อมูล local ออกเพื่อบังคับ logout
+      // แม้การออกจากระบบผิดพลาด ก็ให้ลบข้อมูลท้องถิ่นเพื่อบังคับออกจากระบบ
       localStorage.removeItem("currentUser");
       queryClient.clear();
       window.location.href = "/login";
     },
   });
 
+  // ฟังก์ชันเรียกใช้การออกจากระบบ
   const logout = () => {
     logoutMutation.mutate();
   };
 
+  // ส่งคืนข้อมูลและฟังก์ชันที่จำเป็น
   return {
-    user: currentUser?.user,
-    isLoading,
-    isAuthenticated: !!currentUser?.user,
-    error,
-    logout,
-    isLoggingOut: logoutMutation.isPending,
+    user: currentUser?.user,           // ข้อมูลผู้ใช้ปัจจุบัน
+    isLoading,                         // สถานะการโหลดข้อมูล
+    isAuthenticated: !!currentUser?.user, // สถานะการล็อกอิน
+    error,                             // ข้อผิดพลาด (ถ้ามี)
+    logout,                            // ฟังก์ชันออกจากระบบ
+    isLoggingOut: logoutMutation.isPending, // สถานะการออกจากระบบ
   };
 }
 
 /**
- * Hook สำหรับตรวจสอบสิทธิ์แอดมิน
+ * Hook สำหรับตรวจสอบสิทธิ์ผู้ดูแลระบบ
+ * ใช้ข้อมูลจาก useAuth และเพิ่มการตรวจสอบสิทธิ์แอดมิน
  */
 export function useAdminAuth() {
   const { user, isLoading, isAuthenticated } = useAuth();
   
   return {
-    user,
-    isLoading,
-    isAuthenticated,
-    isAdmin: user?.isAdmin || false,
+    user,                                    // ข้อมูลผู้ใช้
+    isLoading,                              // สถานะการโหลด
+    isAuthenticated,                        // สถานะการล็อกอิน
+    isAdmin: user?.isAdmin || false,        // สิทธิ์ผู้ดูแลระบบ
   };
 }
