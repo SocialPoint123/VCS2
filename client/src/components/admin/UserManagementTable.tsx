@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// ประเภทข้อมูลผู้ใช้ที่แสดงในตาราง
 interface User {
   id: number;
   username: string;
@@ -17,20 +18,27 @@ interface User {
   creditBalance: string;
 }
 
+// Props สำหรับคอมโพเนนท์ตารางจัดการผู้ใช้
 interface UserManagementTableProps {
-  onShowLoginLogs: (userId: number) => void;
-  onShowCreditLogs: (userId: number) => void;
+  onShowLoginLogs: (userId: number) => void;    // ฟังก์ชันแสดงประวัติล็อกอิน
+  onShowCreditLogs: (userId: number) => void;   // ฟังก์ชันแสดงประวัติเครดิต
 }
 
+/**
+ * คอมโพเนนท์ตารางจัดการผู้ใช้
+ * แสดงรายชื่อผู้ใช้พร้อมฟีเจอร์ค้นหาและจัดการ
+ */
 export default function UserManagementTable({ onShowLoginLogs, onShowCreditLogs }: UserManagementTableProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");      // คำค้นหาผู้ใช้
+  const { toast } = useToast();                          // ฟังก์ชันแสดงข้อความแจ้งเตือน
+  const queryClient = useQueryClient();                  // ตัวจัดการ cache ของ React Query
 
+  // ดึงข้อมูลรายชื่อผู้ใช้ทั้งหมด
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
   });
 
+  // Mutation สำหรับอัปเดตสถานะผู้ใช้
   const updateStatusMutation = useMutation({
     mutationFn: async ({ userId, status }: { userId: number; status: string }) => {
       const response = await apiRequest("PATCH", `/api/admin/users/${userId}/status`, { status });

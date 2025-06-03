@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Users, Circle, Coins, ArrowRightLeft } from "lucide-react";
 
+/**
+ * คอมโพเนนท์แสดงสถิติภาพรวมในหน้าแดชบอร์ดแอดมิน
+ * แสดงจำนวนผู้ใช้, ผู้ใช้ออนไลน์, เครดิตรวม, และธุรกรรมรายวัน
+ */
 export default function DashboardStats() {
+  // ดึงข้อมูลสถิติจาก API
   const { data: stats, isLoading } = useQuery({
     queryKey: ["/api/admin/dashboard-stats"],
   });

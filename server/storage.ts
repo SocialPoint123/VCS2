@@ -3,45 +3,57 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, or, and } from "drizzle-orm";
 
+/**
+ * Interface สำหรับการจัดการข้อมูลในระบบ
+ * กำหนดฟังก์ชันที่จำเป็นสำหรับการจัดการผู้ใช้ ล็อกอิน และเครดิต
+ */
 export interface IStorage {
-  // User management
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  getAllUsers(): Promise<User[]>;
-  updateUserStatus(id: number, status: string): Promise<User | undefined>;
+  // การจัดการผู้ใช้
+  getUser(id: number): Promise<User | undefined>;                        // ดึงข้อมูลผู้ใช้ตาม ID
+  getUserByUsername(username: string): Promise<User | undefined>;         // ดึงข้อมูลผู้ใช้ตาม username
+  getUserByEmail(email: string): Promise<User | undefined>;               // ดึงข้อมูลผู้ใช้ตาม email
+  createUser(user: InsertUser): Promise<User>;                            // สร้างผู้ใช้ใหม่
+  getAllUsers(): Promise<User[]>;                                         // ดึงรายชื่อผู้ใช้ทั้งหมด
+  updateUserStatus(id: number, status: string): Promise<User | undefined>; // อัปเดตสถานะผู้ใช้
 
-  // Admin specific
+  // ข้อมูลสถิติสำหรับแอดมิน
   getDashboardStats(): Promise<{
-    totalUsers: number;
-    onlineUsers: number;
-    totalCredits: string;
-    todayTransactions: number;
+    totalUsers: number;      // จำนวนผู้ใช้ทั้งหมด
+    onlineUsers: number;     // จำนวนผู้ใช้ออนไลน์
+    totalCredits: string;    // เครดิตรวมทั้งหมด
+    todayTransactions: number; // ธุรกรรมวันนี้
   }>;
 
-  // Login logs
-  createLoginLog(log: InsertLoginLog): Promise<LoginLog>;
-  getUserLoginLogs(userId: number): Promise<LoginLog[]>;
+  // การจัดการล็อกอิน
+  createLoginLog(log: InsertLoginLog): Promise<LoginLog>;        // บันทึกล็อกการเข้าระบบ
+  getUserLoginLogs(userId: number): Promise<LoginLog[]>;        // ดึงประวัติล็อกอินของผู้ใช้
 
-  // Credit wallets
-  getUserWallet(userId: number): Promise<CreditWallet | undefined>;
-  createUserWallet(wallet: InsertCreditWallet): Promise<CreditWallet>;
-  updateWalletBalance(userId: number, balance: string): Promise<CreditWallet | undefined>;
+  // การจัดการกระเป๋าเงิน
+  getUserWallet(userId: number): Promise<CreditWallet | undefined>;                    // ดึงข้อมูลกระเป๋าเงิน
+  createUserWallet(wallet: InsertCreditWallet): Promise<CreditWallet>;                 // สร้างกระเป๋าเงินใหม่
+  updateWalletBalance(userId: number, balance: string): Promise<CreditWallet | undefined>; // อัปเดตยอดเงิน
 
-  // Credit transactions
-  createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction>;
-  getUserCreditTransactions(userId: number): Promise<CreditTransaction[]>;
-  getAllCreditTransactions(): Promise<CreditTransaction[]>;
+  // การจัดการธุรกรรมเครดิต
+  createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction>; // สร้างธุรกรรมใหม่
+  getUserCreditTransactions(userId: number): Promise<CreditTransaction[]>;                   // ดึงประวัติธุรกรรมของผู้ใช้
+  getAllCreditTransactions(): Promise<CreditTransaction[]>;                                  // ดึงธุรกรรมทั้งหมด
 }
 
-// Database connection
+// การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
 const client = postgres(process.env.DATABASE_URL!);
 const db = drizzle(client);
 
+/**
+ * คลาสจัดการข้อมูลผ่านฐานข้อมูล Supabase
+ * ใช้ Drizzle ORM ในการจัดการ CRUD operations
+ */
 export class DatabaseStorage implements IStorage {
+  /**
+   * สร้างข้อมูลตัวอย่างในฐานข้อมูล (ถ้ายังไม่มี)
+   * จะสร้างผู้ใช้ตัวอย่าง กระเป๋าเงิน ประวัติล็อกอิน และธุรกรรม
+   */
   async initializeData() {
-    // Check if admin user exists, if not create sample data
+    // ตรวจสอบว่ามี admin user อยู่แล้วหรือไม่
     const existingAdmin = await this.getUserByUsername("admin");
     
     if (!existingAdmin) {
