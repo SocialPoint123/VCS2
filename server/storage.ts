@@ -1,7 +1,7 @@
-import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike } from "@shared/schema";
+import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage } from "@shared/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, desc, or, and } from "drizzle-orm";
+import { eq, desc, or, and, sql, isNull } from "drizzle-orm";
 
 /**
  * Interface สำหรับการจัดการข้อมูลในระบบ
@@ -434,6 +434,53 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)))
       .limit(1);
     return result[0];
+  }
+
+  // การจัดการข้อความแชท
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const result = await db.insert(messages).values(message).returning();
+    return result[0];
+  }
+
+  async getPrivateMessages(userId1: number, userId2: number): Promise<Message[]> {
+    return await db.select()
+      .from(messages)
+      .where(
+        and(
+          or(
+            and(eq(messages.fromUserId, userId1), eq(messages.toUserId, userId2)),
+            and(eq(messages.fromUserId, userId2), eq(messages.toUserId, userId1))
+          ),
+          isNull(messages.roomId)
+        )
+      )
+      .orderBy(desc(messages.createdAt));
+  }
+
+  async getPublicMessages(roomId: string): Promise<Message[]> {
+    return await db.select()
+      .from(messages)
+      .where(eq(messages.roomId, roomId))
+      .orderBy(desc(messages.createdAt))
+      .limit(100);
+  }
+
+  async markMessageAsRead(messageId: number): Promise<boolean> {
+    try {
+      await db.update(messages)
+        .set({ isRead: true })
+        .where(eq(messages.id, messageId));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async getUnreadMessageCount(userId: number): Promise<number> {
+    const result = await db.select({ count: sql`count(*)`.as('count') })
+      .from(messages)
+      .where(and(eq(messages.toUserId, userId), eq(messages.isRead, false)));
+    return Number(result[0]?.count) || 0;
   }
 }
 

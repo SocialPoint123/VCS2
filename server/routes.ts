@@ -242,5 +242,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // API สำหรับระบบแชท
+  
+  // ส่งข้อความใหม่
+  app.post("/api/messages", async (req, res) => {
+    try {
+      const { fromUserId, toUserId, roomId, message, messageType } = req.body;
+      
+      if (!fromUserId || !message) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const newMessage = await storage.createMessage({
+        fromUserId,
+        toUserId: toUserId || null,
+        roomId: roomId || null,
+        message,
+        messageType: messageType || "text",
+      });
+
+      res.json(newMessage);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
+  // ดึงข้อความแชทส่วนตัว
+  app.get("/api/messages/private/:userId1/:userId2", async (req, res) => {
+    try {
+      const userId1 = parseInt(req.params.userId1);
+      const userId2 = parseInt(req.params.userId2);
+      
+      if (isNaN(userId1) || isNaN(userId2)) {
+        return res.status(400).json({ error: "Invalid user IDs" });
+      }
+
+      const messages = await storage.getPrivateMessages(userId1, userId2);
+      
+      // เพิ่มข้อมูลผู้ใช้สำหรับแต่ละข้อความ
+      const messagesWithUsers = await Promise.all(
+        messages.map(async (msg) => {
+          const fromUser = await storage.getUser(msg.fromUserId);
+          const toUser = msg.toUserId ? await storage.getUser(msg.toUserId) : null;
+          return {
+            ...msg,
+            fromUser: fromUser ? { id: fromUser.id, name: fromUser.name, username: fromUser.username } : null,
+            toUser: toUser ? { id: toUser.id, name: toUser.name, username: toUser.username } : null,
+          };
+        })
+      );
+
+      res.json(messagesWithUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch private messages" });
+    }
+  });
+
+  // ดึงข้อความโถงแชทสาธารณะ
+  app.get("/api/messages/public/:roomId", async (req, res) => {
+    try {
+      const { roomId } = req.params;
+      const messages = await storage.getPublicMessages(roomId);
+      
+      // เพิ่มข้อมูลผู้ใช้สำหรับแต่ละข้อความ
+      const messagesWithUsers = await Promise.all(
+        messages.map(async (msg) => {
+          const fromUser = await storage.getUser(msg.fromUserId);
+          return {
+            ...msg,
+            fromUser: fromUser ? { id: fromUser.id, name: fromUser.name, username: fromUser.username } : null,
+          };
+        })
+      );
+
+      res.json(messagesWithUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch public messages" });
+    }
+  });
+
+  // ทำเครื่องหมายข้อความว่าอ่านแล้ว
+  app.patch("/api/messages/:messageId/read", async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      if (isNaN(messageId)) {
+        return res.status(400).json({ error: "Invalid message ID" });
+      }
+
+      const success = await storage.markMessageAsRead(messageId);
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(500).json({ error: "Failed to mark message as read" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to mark message as read" });
+    }
+  });
+
+  // นับข้อความที่ยังไม่ได้อ่าน
+  app.get("/api/messages/unread/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const count = await storage.getUnreadMessageCount(userId);
+      res.json({ unreadCount: count });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get unread message count" });
+    }
+  });
+
   return httpServer;
 }
