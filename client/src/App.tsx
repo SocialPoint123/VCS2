@@ -5,11 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import AdminDashboard from "@/pages/admin";
+import FeedPage from "@/pages/feed";
 
 function Router() {
   return (
     <Switch>
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/feed" component={FeedPage} />
+      <Route path="/" component={FeedPage} />
       <Route component={NotFound} />
     </Switch>
   );
