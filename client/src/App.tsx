@@ -7,6 +7,8 @@ import NotFound from "@/pages/not-found";
 import AdminDashboard from "@/pages/admin";
 import FeedPage from "@/pages/feed";
 import ViewPostPage from "@/pages/post/[id]";
+import PublicChatPage from "@/pages/chat";
+import PrivateChatPage from "@/pages/chat/[userId]";
 
 function Router() {
   return (
@@ -14,6 +16,8 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/feed" component={FeedPage} />
       <Route path="/post/:id" component={ViewPostPage} />
+      <Route path="/chat" component={PublicChatPage} />
+      <Route path="/chat/:userId" component={PrivateChatPage} />
       <Route path="/" component={FeedPage} />
       <Route component={NotFound} />
     </Switch>
