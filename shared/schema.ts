@@ -175,9 +175,10 @@ export const userActiveItems = pgTable("user_active_items", {
   itemId: integer("item_id").notNull().references(() => shopItems.id),
   type: text("type").notNull(),
   activatedAt: timestamp("activated_at").defaultNow(),
-}, (table) => ({
-  userTypeIdx: uniqueIndex("user_active_items_user_type_idx").on(table.userId, table.type),
-}));
+});
+
+// Create the unique index separately
+export const userActiveItemsUserTypeIdx = uniqueIndex("user_active_items_user_type_idx").on(userActiveItems.userId, userActiveItems.type);
 
 export const insertShopItemSchema = createInsertSchema(shopItems).omit({
   id: true,
