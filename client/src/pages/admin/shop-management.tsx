@@ -30,7 +30,7 @@ interface ShopItem {
   price: string;
   type: string;
   rarity: string;
-  imageUrl?: string;
+  // imageUrl is removed and mediaUrl is used instead
   isActive?: boolean;
   createdAt: string;
 }

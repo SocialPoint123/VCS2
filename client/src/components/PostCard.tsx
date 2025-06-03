@@ -111,6 +111,7 @@ export default function PostCard({ post, onUpdate, defaultShowComments = false }
               poster=""
             >
               <source src={post.mediaUrl} type="video/mp4" />
+            {/* Ensure it's using mediaUrl for media and image rendering */}
               เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ
             </video>
           </div>
