@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  User
 } from "lucide-react";
 import { useState } from "react";
 
@@ -47,6 +48,12 @@ export default function NavigationBar() {
       label: "สินเชื่อ",
       icon: DollarSign,
       active: location.startsWith("/loan")
+    },
+    {
+      path: "/profile",
+      label: "โปรไฟล์",
+      icon: User,
+      active: location.startsWith("/profile")
     },
     {
       path: "/admin",

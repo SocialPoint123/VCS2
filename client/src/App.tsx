@@ -11,6 +11,7 @@ import ViewPostPage from "@/pages/post/[id]";
 import PublicChatPage from "@/pages/chat";
 import PrivateChatPage from "@/pages/chat/[userId]";
 import LoanPage from "@/pages/loan";
+import ProfilePage from "@/pages/profile";
 
 function Router() {
   return (
@@ -23,6 +24,8 @@ function Router() {
         <Route path="/chat" component={PublicChatPage} />
         <Route path="/chat/:userId" component={PrivateChatPage} />
         <Route path="/loan" component={LoanPage} />
+        <Route path="/profile/:userId" component={ProfilePage} />
+        <Route path="/profile" component={ProfilePage} />
         <Route path="/" component={FeedPage} />
         <Route component={NotFound} />
       </Switch>

@@ -25,6 +25,19 @@ export function useUserPosts(userId: number) {
   });
 }
 
+// Hook สำหรับตรวจสอบสิทธิ์การขอสินเชื่อ
+export function useLoanEligibility(userId: number) {
+  return useQuery({
+    queryKey: ["/api/loans/eligibility", userId],
+    queryFn: async () => {
+      const response = await fetch(`/api/loans/eligibility/${userId}`);
+      if (!response.ok) throw new Error("Failed to check eligibility");
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // Cache เป็นเวลา 5 นาที
+  });
+}
+
 // Hook สำหรับโอนเครดิต
 export function useTransferCredits() {
   const queryClient = useQueryClient();
