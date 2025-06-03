@@ -811,8 +811,8 @@ export class DatabaseStorage implements IStorage {
         price: item.price,
         type: item.type,
         rarity: item.rarity,
-        imageUrl: item.imageUrl,
-        isActive: true,
+        mediaUrl: item.mediaUrl,
+        isAvailable: true,
       }).returning();
       return result[0];
     } catch (error) {
@@ -837,7 +837,7 @@ export class DatabaseStorage implements IStorage {
   async toggleShopItemStatus(itemId: number, isActive: boolean): Promise<any | undefined> {
     try {
       const result = await db.update(shopItems)
-        .set({ isActive })
+        .set({ isAvailable: isActive })
         .where(eq(shopItems.id, itemId))
         .returning();
       return result[0];
@@ -1037,14 +1037,15 @@ export class DatabaseStorage implements IStorage {
 
   async getUserActiveItems(userId: number): Promise<any[]> {
     try {
-      // ใช้ raw SQL เพื่อหลีกเลี่ยงปัญหา schema
-      const result = await client.query(`
-        SELECT item_id as "itemId", type 
-        FROM user_active_items 
-        WHERE user_id = $1
-      `, [userId]);
+      // ใช้ Drizzle ORM แทน raw SQL
+      const result = await db.select({
+        itemId: userActiveItems.itemId,
+        type: userActiveItems.type
+      })
+      .from(userActiveItems)
+      .where(eq(userActiveItems.userId, userId));
 
-      return result.rows;
+      return result;
     } catch (error) {
       console.error("Error getting user active items:", error);
       return [];
