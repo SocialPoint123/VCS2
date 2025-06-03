@@ -11,7 +11,9 @@ import {
   X,
   User,
   Wallet,
-  Store
+  Store,
+  Package,
+  PawPrint
 } from "lucide-react";
 import { useState } from "react";
 
@@ -56,6 +58,18 @@ export default function NavigationBar() {
       label: "กระเป๋าเงิน",
       icon: Wallet,
       active: location.startsWith("/wallet")
+    },
+    {
+      path: "/inventory",
+      label: "กระเป๋าไอเทม",
+      icon: Package,
+      active: location.startsWith("/inventory")
+    },
+    {
+      path: "/pet",
+      label: "สัตว์เลี้ยง",
+      icon: PawPrint,
+      active: location.startsWith("/pet")
     },
     {
       path: "/loan",
