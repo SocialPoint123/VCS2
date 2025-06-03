@@ -215,6 +215,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo data creation route (for testing)
+  app.post("/api/create-demo-account", async (req, res) => {
+    try {
+      // Create demo user
+      const hashedPassword = await bcrypt.hash("demo123", 10);
+      
+      const demoUser = await storage.createUser({
+        username: "demo",
+        email: "demo@example.com",
+        name: "Demo User",
+        password: hashedPassword,
+        role: "user",
+        status: "active"
+      });
+      
+      // Create wallet for demo user
+      await storage.createUserWallet({
+        userId: demoUser.id,
+        balance: "5000.00"
+      });
+      
+      res.json({ success: true, message: "Demo account created", user: { username: "demo", password: "demo123" } });
+    } catch (error) {
+      console.error("Demo account creation error:", error);
+      res.status(500).json({ message: "Failed to create demo account" });
+    }
+  });
+
   // ==================== Admin Routes ====================
   
   // API สำหรับดึงสถิติภาพรวมระบบ

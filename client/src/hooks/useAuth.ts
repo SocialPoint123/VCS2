@@ -32,19 +32,24 @@ export function useAuth() {
       // ตรวจสอบ localStorage ก่อน
       const stored = localStorage.getItem("currentUser");
       if (!stored) {
-        throw new Error("Not authenticated");
+        return null;
       }
 
       try {
         const parsedUser = JSON.parse(stored);
         
-        // ตรวจสอบกับ server ว่า session ยังใช้ได้อยู่หรือไม่
-        const serverUser = await apiRequest("/api/auth/me");
-        return serverUser;
+        // ถ้ามี sessionId ให้ตรวจสอบกับ server
+        if (parsedUser.sessionId) {
+          const serverUser = await apiRequest("/api/auth/me");
+          return serverUser;
+        }
+        
+        // ถ้าไม่มี sessionId ให้ใช้ข้อมูลจาก localStorage
+        return parsedUser;
       } catch (error) {
         // ถ้า server ตอบว่า unauthorized ให้ลบ localStorage
         localStorage.removeItem("currentUser");
-        throw new Error("Session expired");
+        return null;
       }
     },
     retry: false,
