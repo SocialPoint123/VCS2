@@ -4,20 +4,20 @@ import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
-// Session storage for authenticated users
+// การจัดเก็บเซสชันสำหรับผู้ใช้ที่ยืนยันตัวตนแล้ว
 const userSessions = new Map<string, { userId: number; timestamp: number }>();
 
-// Helper function to generate session ID
+// ฟังก์ชันสำหรับสร้าง session ID
 function generateSessionId(): string {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-// Helper function to verify session
+// ฟังก์ชันตรวจสอบความถูกต้องของเซสชัน
 function verifySession(sessionId: string): number | null {
   const session = userSessions.get(sessionId);
   if (!session) return null;
   
-  // Session expires after 24 hours
+  // เซสชันจะหมดอายุหลังจาก 24 ชั่วโมง
   if (Date.now() - session.timestamp > 24 * 60 * 60 * 1000) {
     userSessions.delete(sessionId);
     return null;
@@ -26,30 +26,30 @@ function verifySession(sessionId: string): number | null {
   return session.userId;
 }
 
-// Middleware to check authentication
+// มิดเดิลแวร์สำหรับตรวจสอบการยืนยันตัวตน
 function requireAuth(req: any, res: any, next: any) {
   const sessionId = req.headers['x-session-id'] || req.cookies?.sessionId;
   const userId = verifySession(sessionId);
   
   if (!userId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "ไม่ได้รับอนุญาต" });
   }
   
   req.userId = userId;
   next();
 }
 
-// Schema for validation
+// โครงสร้างข้อมูลสำหรับการตรวจสอบ
 const loginSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().min(1),
+  username: z.string().min(1, "กรุณากรอกชื่อผู้ใช้"),
+  password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
 });
 
 const registerSchema = z.object({
-  username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/),
-  email: z.string().email(),
-  name: z.string().min(1),
-  password: z.string().min(6),
+  username: z.string().min(3, "ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร").max(20, "ชื่อผู้ใช้ต้องไม่เกิน 20 ตัวอักษร").regex(/^[a-zA-Z0-9_]+$/, "ชื่อผู้ใช้ต้องเป็นตัวอักษร ตัวเลข หรือ _ เท่านั้น"),
+  email: z.string().email("รูปแบบอีเมลไม่ถูกต้อง"),
+  name: z.string().min(1, "กรุณากรอกชื่อ-นามสกุล"),
+  password: z.string().min(6, "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"),
 });
 
 /**
@@ -829,7 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // เพิ่มข้อมูลผู้ใช้สำหรับธุรกรรมการโอน
       const transactionsWithUsers = await Promise.all(
         transactions.map(async (transaction) => {
-          const result = { ...transaction };
+          const result: any = { ...transaction };
           
           if (transaction.fromUserId && transaction.fromUserId !== userId) {
             const fromUser = await storage.getUser(transaction.fromUserId);
