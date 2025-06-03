@@ -25,6 +25,7 @@ function Router() {
         <Route path="/chat" component={PublicChatPage} />
         <Route path="/chat/:userId" component={PrivateChatPage} />
         <Route path="/loan" component={LoanPage} />
+        <Route path="/wallet" component={WalletPage} />
         <Route path="/profile/:userId" component={ProfilePage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/" component={FeedPage} />
