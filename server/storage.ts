@@ -1059,21 +1059,15 @@ export class DatabaseStorage implements IStorage {
         throw new Error("User does not own this item");
       }
 
-      // ใช้ Drizzle ORM เพื่อ upsert ไอเทมที่ใช้งาน
-      await db.insert(userActiveItems)
-        .values({
-          userId,
-          itemId,
-          type,
-          activatedAt: new Date()
-        })
-        .onConflictDoUpdate({
-          target: [userActiveItems.userId, userActiveItems.type],
-          set: {
-            itemId,
-            activatedAt: new Date()
-          }
-        });
+      // ใช้ raw SQL เพื่อ upsert ไอเทมที่ใช้งาน เนื่องจากปัญหา schema
+      const query = `
+        INSERT INTO user_active_items (user_id, item_id, type, activated_at)
+        VALUES ($1, $2, $3, NOW())
+        ON CONFLICT (user_id, type)
+        DO UPDATE SET item_id = EXCLUDED.item_id, activated_at = EXCLUDED.activated_at
+      `;
+      
+      await db.execute(sql.raw(query, [userId, itemId, type]));
 
       return true;
     } catch (error) {

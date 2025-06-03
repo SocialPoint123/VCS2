@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SidebarNavigation from "@/components/SidebarNavigation";
+import { useTheme } from "@/hooks/useTheme";
 import NotFound from "@/pages/not-found";
 import AdminDashboard from "@/pages/admin";
 import FeedPage from "@/pages/feed";
