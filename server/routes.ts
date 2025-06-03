@@ -557,5 +557,173 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API สำหรับระบบกระเป๋าเงิน
+  
+  // ดึงข้อมูลกระเป๋าเงิน
+  app.get("/api/wallet/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const wallet = await storage.getUserWallet(userId);
+      if (wallet) {
+        res.json(wallet);
+      } else {
+        res.status(404).json({ error: "Wallet not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch wallet" });
+    }
+  });
+
+  // ดึงประวัติธุรกรรม
+  app.get("/api/wallet/:userId/transactions", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const transactions = await storage.getUserCreditTransactions(userId);
+      
+      // เพิ่มข้อมูลผู้ใช้สำหรับธุรกรรมการโอน
+      const transactionsWithUsers = await Promise.all(
+        transactions.map(async (transaction) => {
+          const result = { ...transaction };
+          
+          if (transaction.fromUserId && transaction.fromUserId !== userId) {
+            const fromUser = await storage.getUser(transaction.fromUserId);
+            if (fromUser) {
+              result.fromUser = {
+                id: fromUser.id,
+                name: fromUser.name,
+                username: fromUser.username
+              };
+            }
+          }
+          
+          if (transaction.toUserId && transaction.toUserId !== userId) {
+            const toUser = await storage.getUser(transaction.toUserId);
+            if (toUser) {
+              result.toUser = {
+                id: toUser.id,
+                name: toUser.name,
+                username: toUser.username
+              };
+            }
+          }
+          
+          return result;
+        })
+      );
+
+      res.json(transactionsWithUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch transaction history" });
+    }
+  });
+
+  // ขอเติมเครดิต
+  app.post("/api/wallet/top-up", async (req, res) => {
+    try {
+      const { userId, amount, note } = req.body;
+      
+      if (!userId || !amount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const topUpAmount = parseFloat(amount);
+      if (topUpAmount <= 0) {
+        return res.status(400).json({ error: "Invalid top-up amount" });
+      }
+
+      // สร้างธุรกรรมรอการอนุมัติ
+      await storage.createCreditTransaction({
+        toUserId: userId,
+        amount: topUpAmount.toString(),
+        type: "top_up",
+        status: "pending",
+        note: note || "ขอเติมเครดิต",
+        balanceAfter: "0.00" // จะอัปเดตเมื่อได้รับการอนุมัติ
+      });
+
+      res.json({ 
+        success: true, 
+        message: "ส่งคำขอเติมเครดิตแล้ว รอการอนุมัติจากผู้ดูแลระบบ" 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to request top-up" });
+    }
+  });
+
+  // ขอถอนเครดิต
+  app.post("/api/wallet/withdraw", async (req, res) => {
+    try {
+      const { userId, amount, note } = req.body;
+      
+      if (!userId || !amount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const withdrawAmount = parseFloat(amount);
+      if (withdrawAmount <= 0) {
+        return res.status(400).json({ error: "Invalid withdrawal amount" });
+      }
+
+      // ตรวจสอบยอดเงินคงเหลือ
+      const wallet = await storage.getUserWallet(userId);
+      if (!wallet || parseFloat(wallet.balance) < withdrawAmount) {
+        return res.status(400).json({ error: "Insufficient balance" });
+      }
+
+      // สร้างธุรกรรมรอการอนุมัติ
+      await storage.createCreditTransaction({
+        fromUserId: userId,
+        amount: `-${withdrawAmount}`,
+        type: "withdraw",
+        status: "pending",
+        note: note || "ขอถอนเครดิต",
+        balanceAfter: "0.00" // จะอัปเดตเมื่อได้รับการอนุมัติ
+      });
+
+      res.json({ 
+        success: true, 
+        message: "ส่งคำขอถอนเครดิตแล้ว รอการอนุมัติจากผู้ดูแลระบบ" 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to request withdrawal" });
+    }
+  });
+
+  // ค้นหาผู้ใช้สำหรับการโอนเครดิต
+  app.get("/api/users/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+
+      const users = await storage.getAllUsers();
+      const filteredUsers = users
+        .filter(user => 
+          user.name.toLowerCase().includes(query.toLowerCase()) ||
+          user.username.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, 10) // จำกัดผลลัพธ์ไม่เกิน 10 รายการ
+        .map(user => ({
+          id: user.id,
+          name: user.name,
+          username: user.username
+        }));
+
+      res.json(filteredUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search users" });
+    }
+  });
+
   return httpServer;
 }

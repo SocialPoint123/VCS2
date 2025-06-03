@@ -12,6 +12,7 @@ import PublicChatPage from "@/pages/chat";
 import PrivateChatPage from "@/pages/chat/[userId]";
 import LoanPage from "@/pages/loan";
 import ProfilePage from "@/pages/profile";
+import WalletPage from "@/pages/wallet";
 
 function Router() {
   return (
