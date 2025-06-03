@@ -1,4 +1,4 @@
-import { users, loginLogs, creditWallets, creditTransactions, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction } from "@shared/schema";
+import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike } from "@shared/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, or, and } from "drizzle-orm";
@@ -37,6 +37,22 @@ export interface IStorage {
   createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction>; // สร้างธุรกรรมใหม่
   getUserCreditTransactions(userId: number): Promise<CreditTransaction[]>;                   // ดึงประวัติธุรกรรมของผู้ใช้
   getAllCreditTransactions(): Promise<CreditTransaction[]>;                                  // ดึงธุรกรรมทั้งหมด
+
+  // การจัดการโพสต์โซเชียลมีเดีย
+  createPost(post: InsertPost): Promise<Post>;                              // สร้างโพสต์ใหม่
+  getAllPosts(): Promise<Post[]>;                                           // ดึงโพสต์ทั้งหมด
+  getPostById(id: number): Promise<Post | undefined>;                       // ดึงโพสต์ตาม ID
+  deletePost(id: number): Promise<boolean>;                                 // ลบโพสต์
+
+  // การจัดการคอมเมนต์
+  createComment(comment: InsertComment): Promise<Comment>;                  // สร้างคอมเมนต์ใหม่
+  getPostComments(postId: number): Promise<Comment[]>;                      // ดึงคอมเมนต์ของโพสต์
+  deleteComment(id: number): Promise<boolean>;                              // ลบคอมเมนต์
+
+  // การจัดการไลค์/ดิสไลค์
+  togglePostLike(like: InsertPostLike): Promise<PostLike | null>;           // เพิ่ม/ลบไลค์
+  getPostLikes(postId: number): Promise<PostLike[]>;                        // ดึงไลค์ของโพสต์
+  getUserPostLike(postId: number, userId: number): Promise<PostLike | undefined>; // ดึงไลค์ของผู้ใช้สำหรับโพสต์นั้น
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
@@ -161,6 +177,72 @@ export class DatabaseStorage implements IStorage {
         note: "ชนะ Jackpot เกมสล็อต",
         balanceAfter: "847.50"
       });
+
+      // สร้างโพสต์ตัวอย่าง
+      const post1 = await this.createPost({
+        userId: user1.id,
+        content: "วันนี้โชคดีมาก ชนะ Jackpot เกมสล็อต 🎰✨ ขอบคุณ BergDotBet ที่ทำให้ชีวิตดีขึ้น!",
+        mediaUrl: "https://images.unsplash.com/photo-1606963954670-2fd75ee5f7eb",
+        mediaType: "image"
+      });
+
+      const post2 = await this.createPost({
+        userId: user2.id,
+        content: "เทคนิคเล่นบาคาร่าให้ได้กำไร 💰 ใครสนใจแชร์ประสบการณ์กันได้นะ",
+        mediaUrl: null,
+        mediaType: null
+      });
+
+      const post3 = await this.createPost({
+        userId: user1.id,
+        content: "ดูคลิปเทคนิคการเล่นนี้แล้วปรับปรุงเกมส์ได้เยอะเลย!",
+        mediaUrl: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
+        mediaType: "video"
+      });
+
+      // สร้างคอมเมนต์ตัวอย่าง
+      await this.createComment({
+        postId: post1.id,
+        userId: user2.id,
+        text: "ยินดีด้วยนะ! แชร์เทคนิคหน่อยสิ 😊"
+      });
+
+      await this.createComment({
+        postId: post1.id,
+        userId: user3.id,
+        text: "โคตรโชคดี เอาเงินไปลงทุนต่อเลย"
+      });
+
+      await this.createComment({
+        postId: post2.id,
+        userId: user1.id,
+        text: "เทคนิคที่ผมใช้คือดูจังหวะและการจัดการเงิน อย่าโลภมาก"
+      });
+
+      // สร้างไลค์ตัวอย่าง
+      await this.togglePostLike({
+        postId: post1.id,
+        userId: user2.id,
+        type: "like"
+      });
+
+      await this.togglePostLike({
+        postId: post1.id,
+        userId: user3.id,
+        type: "like"
+      });
+
+      await this.togglePostLike({
+        postId: post2.id,
+        userId: user1.id,
+        type: "like"
+      });
+
+      await this.togglePostLike({
+        postId: post2.id,
+        userId: user3.id,
+        type: "dislike"
+      });
     }
   }
 
@@ -263,6 +345,88 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCreditTransactions(): Promise<CreditTransaction[]> {
     return await db.select().from(creditTransactions).orderBy(desc(creditTransactions.createdAt));
+  }
+
+  // === การจัดการโพสต์โซเชียลมีเดีย ===
+
+  async createPost(post: InsertPost): Promise<Post> {
+    const result = await db.insert(posts).values(post).returning();
+    return result[0];
+  }
+
+  async getAllPosts(): Promise<Post[]> {
+    return await db.select().from(posts).orderBy(desc(posts.createdAt));
+  }
+
+  async getPostById(id: number): Promise<Post | undefined> {
+    const result = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+    return result[0];
+  }
+
+  async deletePost(id: number): Promise<boolean> {
+    const result = await db.delete(posts).where(eq(posts.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // === การจัดการคอมเมนต์ ===
+
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const result = await db.insert(comments).values(comment).returning();
+    return result[0];
+  }
+
+  async getPostComments(postId: number): Promise<Comment[]> {
+    return await db.select()
+      .from(comments)
+      .where(eq(comments.postId, postId))
+      .orderBy(desc(comments.createdAt));
+  }
+
+  async deleteComment(id: number): Promise<boolean> {
+    const result = await db.delete(comments).where(eq(comments.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // === การจัดการไลค์/ดิสไลค์ ===
+
+  async togglePostLike(like: InsertPostLike): Promise<PostLike | null> {
+    // ตรวจสอบว่าผู้ใช้เคยไลค์โพสต์นี้แล้วหรือไม่
+    const existingLike = await this.getUserPostLike(like.postId, like.userId);
+    
+    if (existingLike) {
+      if (existingLike.type === like.type) {
+        // ถ้าไลค์แบบเดียวกัน ให้ลบออก
+        await db.delete(postLikes)
+          .where(and(eq(postLikes.postId, like.postId), eq(postLikes.userId, like.userId)));
+        return null;
+      } else {
+        // ถ้าไลค์คนละแบบ ให้อัปเดต
+        const result = await db.update(postLikes)
+          .set({ type: like.type })
+          .where(and(eq(postLikes.postId, like.postId), eq(postLikes.userId, like.userId)))
+          .returning();
+        return result[0];
+      }
+    } else {
+      // ถ้ายังไม่เคยไลค์ ให้สร้างใหม่
+      const result = await db.insert(postLikes).values(like).returning();
+      return result[0];
+    }
+  }
+
+  async getPostLikes(postId: number): Promise<PostLike[]> {
+    return await db.select()
+      .from(postLikes)
+      .where(eq(postLikes.postId, postId))
+      .orderBy(desc(postLikes.createdAt));
+  }
+
+  async getUserPostLike(postId: number, userId: number): Promise<PostLike | undefined> {
+    const result = await db.select()
+      .from(postLikes)
+      .where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)))
+      .limit(1);
+    return result[0];
   }
 }
 

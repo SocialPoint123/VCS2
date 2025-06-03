@@ -103,6 +103,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === API สำหรับระบบ Feed โซเชียลมีเดีย ===
+
+  // API สำหรับดึงโพสต์ทั้งหมดพร้อมข้อมูลผู้ใช้และสถิติ
+  app.get("/api/posts", async (req, res) => {
+    try {
+      const posts = await storage.getAllPosts();
+      const postsWithDetails = await Promise.all(
+        posts.map(async (post) => {
+          const user = await storage.getUser(post.userId);
+          const likes = await storage.getPostLikes(post.id);
+          const comments = await storage.getPostComments(post.id);
+          
+          const likesCount = likes.filter(like => like.type === 'like').length;
+          const dislikesCount = likes.filter(like => like.type === 'dislike').length;
+          
+          return {
+            ...post,
+            user: user ? { id: user.id, name: user.name, username: user.username } : null,
+            likesCount,
+            dislikesCount,
+            commentsCount: comments.length
+          };
+        })
+      );
+      res.json(postsWithDetails);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch posts" });
+    }
+  });
+
+  // API สำหรับสร้างโพสต์ใหม่
+  app.post("/api/posts", async (req, res) => {
+    try {
+      const { userId, content, mediaUrl, mediaType } = req.body;
+      
+      if (!userId || !content) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const newPost = await storage.createPost({
+        userId,
+        content,
+        mediaUrl: mediaUrl || null,
+        mediaType: mediaType || null
+      });
+
+      res.status(201).json(newPost);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create post" });
+    }
+  });
+
+  // API สำหรับดึงคอมเมนต์ของโพสต์พร้อมข้อมูลผู้ใช้
+  app.get("/api/posts/:postId/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      if (isNaN(postId)) {
+        return res.status(400).json({ error: "Invalid post ID" });
+      }
+
+      const comments = await storage.getPostComments(postId);
+      const commentsWithUsers = await Promise.all(
+        comments.map(async (comment) => {
+          const user = await storage.getUser(comment.userId);
+          return {
+            ...comment,
+            user: user ? { id: user.id, name: user.name, username: user.username } : null
+          };
+        })
+      );
+
+      res.json(commentsWithUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  });
+
+  // API สำหรับเพิ่มคอมเมนต์
+  app.post("/api/posts/:postId/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      const { userId, text } = req.body;
+
+      if (isNaN(postId) || !userId || !text) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const newComment = await storage.createComment({
+        postId,
+        userId,
+        text
+      });
+
+      res.status(201).json(newComment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  });
+
+  // API สำหรับไลค์/ดิสไลค์โพสต์
+  app.post("/api/posts/:postId/like", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      const { userId, type } = req.body;
+
+      if (isNaN(postId) || !userId || !['like', 'dislike'].includes(type)) {
+        return res.status(400).json({ error: "Invalid parameters" });
+      }
+
+      const result = await storage.togglePostLike({
+        postId,
+        userId,
+        type
+      });
+
+      res.json({ success: true, like: result });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to toggle like" });
+    }
+  });
+
+  // API สำหรับดึงสถานะไลค์ของผู้ใช้สำหรับโพสต์
+  app.get("/api/posts/:postId/like/:userId", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      const userId = parseInt(req.params.userId);
+
+      if (isNaN(postId) || isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid parameters" });
+      }
+
+      const userLike = await storage.getUserPostLike(postId, userId);
+      res.json({ like: userLike });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user like" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
