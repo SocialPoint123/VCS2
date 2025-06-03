@@ -811,8 +811,10 @@ export class DatabaseStorage implements IStorage {
         price: item.price,
         type: item.type,
         rarity: item.rarity,
-        mediaUrl: item.mediaUrl,
+        mediaUrl: item.mediaUrl || item.imageUrl,
+        imageUrl: item.imageUrl,
         isAvailable: true,
+        isActive: true,
       }).returning();
       return result[0];
     } catch (error) {
@@ -837,7 +839,7 @@ export class DatabaseStorage implements IStorage {
   async toggleShopItemStatus(itemId: number, isActive: boolean): Promise<any | undefined> {
     try {
       const result = await db.update(shopItems)
-        .set({ isAvailable: isActive })
+        .set({ isAvailable: isActive, isActive })
         .where(eq(shopItems.id, itemId))
         .returning();
       return result[0];

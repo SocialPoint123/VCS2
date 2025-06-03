@@ -113,7 +113,9 @@ CREATE TABLE shop_items (
   type TEXT NOT NULL,
   rarity TEXT NOT NULL DEFAULT 'common',
   media_url TEXT,
+  image_url TEXT,
   is_available BOOLEAN DEFAULT TRUE,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

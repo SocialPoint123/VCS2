@@ -158,7 +158,9 @@ export const shopItems = pgTable("shop_items", {
   rarity: text("rarity").default("common"),
   description: text("description"),
   mediaUrl: text("media_url"),
+  imageUrl: text("image_url"),
   isAvailable: boolean("is_available").default(true),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
