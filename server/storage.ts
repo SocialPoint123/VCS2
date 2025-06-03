@@ -53,6 +53,13 @@ export interface IStorage {
   togglePostLike(like: InsertPostLike): Promise<PostLike | null>;           // เพิ่ม/ลบไลค์
   getPostLikes(postId: number): Promise<PostLike[]>;                        // ดึงไลค์ของโพสต์
   getUserPostLike(postId: number, userId: number): Promise<PostLike | undefined>; // ดึงไลค์ของผู้ใช้สำหรับโพสต์นั้น
+
+  // การจัดการข้อความแชท
+  createMessage(message: InsertMessage): Promise<Message>;                  // ส่งข้อความใหม่
+  getPrivateMessages(userId1: number, userId2: number): Promise<Message[]>; // ดึงข้อความแชทส่วนตัว
+  getPublicMessages(roomId: string): Promise<Message[]>;                    // ดึงข้อความโถงแชทสาธารณะ
+  markMessageAsRead(messageId: number): Promise<boolean>;                   // ทำเครื่องหมายข้อความว่าอ่านแล้ว
+  getUnreadMessageCount(userId: number): Promise<number>;                   // นับข้อความที่ยังไม่ได้อ่าน
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver

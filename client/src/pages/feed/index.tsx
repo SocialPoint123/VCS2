@@ -36,17 +36,26 @@ export default function FeedPage() {
     if (!newPostContent.trim()) return;
 
     try {
-      const formData = new FormData();
-      formData.append("userId", 2); // Mock user ID
-      formData.append("content", newPostContent);
+      let mediaUrl = null;
+      let mediaType = null;
+
       if (file) {
-        formData.append("media", file);
-        formData.append("mediaType", "image");
+        // สำหรับตัวอย่างใช้ URL ของไฟล์ที่เลือก
+        mediaUrl = previewUrl;
+        mediaType = file.type.startsWith('image/') ? 'image' : 'video';
       }
 
       const response = await fetch("/api/posts", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: 2, // Mock user ID
+          content: newPostContent,
+          mediaUrl,
+          mediaType,
+        }),
       });
 
       if (response.ok) {
