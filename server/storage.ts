@@ -75,9 +75,13 @@ export interface IStorage {
 
   // การจัดการร้านค้าและไอเทม
   getAllShopItems(): Promise<ShopItem[]>;                                   // ดึงไอเทมทั้งหมดในร้านค้า
+  getAllShopItemsAdmin(): Promise<ShopItem[]>;                              // ดึงไอเทมทั้งหมดสำหรับแอดมิน (รวมที่ซ่อน)
   getShopItemsByType(type: string): Promise<ShopItem[]>;                    // ดึงไอเทมตามประเภท
   getShopItemsByRarity(rarity: string): Promise<ShopItem[]>;                // ดึงไอเทมตามความหายาก
   getShopItemById(itemId: number): Promise<ShopItem | undefined>;           // ดึงข้อมูลไอเทมเดี่ยว
+  createShopItem(item: Partial<ShopItem>): Promise<ShopItem>;               // สร้างไอเทมใหม่
+  updateShopItem(itemId: number, updates: Partial<ShopItem>): Promise<ShopItem | undefined>; // อัปเดตไอเทม
+  toggleShopItemStatus(itemId: number, isActive: boolean): Promise<ShopItem | undefined>; // เปิด/ปิดการแสดงไอเทม
   purchaseItem(userId: number, itemId: number): Promise<boolean>;           // ซื้อไอเทม
   getUserItems(userId: number): Promise<UserItem[]>;                        // ดึงไอเทมของผู้ใช้
   checkUserOwnsItem(userId: number, itemId: number): Promise<boolean>;      // ตรวจสอบความเป็นเจ้าของไอเทม
@@ -781,6 +785,60 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error checking user owns item:", error);
       return false;
+    }
+  }
+
+  async getAllShopItemsAdmin(): Promise<any[]> {
+    try {
+      const result = await db.select().from(shopItems).orderBy(desc(shopItems.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting admin shop items:", error);
+      return [];
+    }
+  }
+
+  async createShopItem(item: any): Promise<any> {
+    try {
+      const result = await db.insert(shopItems).values({
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        type: item.type,
+        rarity: item.rarity,
+        imageUrl: item.imageUrl,
+        isActive: true,
+      }).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating shop item:", error);
+      throw error;
+    }
+  }
+
+  async updateShopItem(itemId: number, updates: any): Promise<any | undefined> {
+    try {
+      const result = await db.update(shopItems)
+        .set(updates)
+        .where(eq(shopItems.id, itemId))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error updating shop item:", error);
+      return undefined;
+    }
+  }
+
+  async toggleShopItemStatus(itemId: number, isActive: boolean): Promise<any | undefined> {
+    try {
+      const result = await db.update(shopItems)
+        .set({ isActive })
+        .where(eq(shopItems.id, itemId))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error toggling shop item status:", error);
+      return undefined;
     }
   }
 
