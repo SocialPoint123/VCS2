@@ -2,44 +2,48 @@ import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "dri
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// ตารางผู้ใช้งาน
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  name: text("name").notNull(),
-  role: text("role").notNull().default("user"), // "admin" or "user"
-  status: text("status").notNull().default("active"), // "active", "suspended", "banned"
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  id: serial("id").primaryKey(),                    // รหัสผู้ใช้ (Primary Key)
+  username: text("username").notNull().unique(),    // ชื่อผู้ใช้ (ต้องไม่ซ้ำ)
+  email: text("email").notNull().unique(),          // อีเมล (ต้องไม่ซ้ำ)
+  password: text("password").notNull(),             // รหัสผ่าน (เข้ารหัส)
+  name: text("name").notNull(),                     // ชื่อ-นามสกุล
+  role: text("role").notNull().default("user"),     // บทบาท: "admin" หรือ "user"
+  status: text("status").notNull().default("active"), // สถานะ: "active", "suspended", "banned"
+  createdAt: timestamp("created_at").notNull().defaultNow(), // วันที่สร้างบัญชี
 });
 
+// ตารางประวัติการเข้าสู่ระบบ
 export const loginLogs = pgTable("login_logs", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  ip: text("ip").notNull(),
-  userAgent: text("user_agent").notNull(),
-  fingerprint: text("fingerprint"),
-  status: text("status").notNull(), // "success" or "failure"
-  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  id: serial("id").primaryKey(),                    // รหัสล็อก
+  userId: integer("user_id").notNull().references(() => users.id), // รหัสผู้ใช้
+  ip: text("ip").notNull(),                         // IP Address
+  userAgent: text("user_agent").notNull(),          // ข้อมูล Browser
+  fingerprint: text("fingerprint"),                 // ลายนิ้วมือดิจิทัล (ถ้ามี)
+  status: text("status").notNull(),                 // สถานะ: "success" หรือ "failure"
+  timestamp: timestamp("timestamp").notNull().defaultNow(), // เวลาที่เข้าสู่ระบบ
 });
 
+// ตารางกระเป๋าเงินดิจิทัล
 export const creditWallets = pgTable("credit_wallets", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  balance: decimal("balance", { precision: 10, scale: 2 }).notNull().default("0.00"),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  id: serial("id").primaryKey(),                    // รหัสกระเป๋าเงิน
+  userId: integer("user_id").notNull().references(() => users.id), // รหัสผู้ใช้
+  balance: decimal("balance", { precision: 10, scale: 2 }).notNull().default("0.00"), // ยอดเงินคงเหลือ
+  updatedAt: timestamp("updated_at").notNull().defaultNow(), // วันที่อัปเดตล่าสุด
 });
 
+// ตารางประวัติธุรกรรมเครดิต
 export const creditTransactions = pgTable("credit_transactions", {
-  id: serial("id").primaryKey(),
-  fromUserId: integer("from_user_id").references(() => users.id),
-  toUserId: integer("to_user_id").references(() => users.id),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  type: text("type").notNull(), // "deposit", "withdrawal", "game_win", "game_loss", "bonus", "transfer"
-  status: text("status").notNull().default("completed"), // "pending", "completed", "failed"
-  note: text("note"),
-  balanceAfter: decimal("balance_after", { precision: 10, scale: 2 }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  id: serial("id").primaryKey(),                    // รหัสธุรกรรม
+  fromUserId: integer("from_user_id").references(() => users.id), // ผู้ส่ง (ถ้ามี)
+  toUserId: integer("to_user_id").references(() => users.id),     // ผู้รับ (ถ้ามี)
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // จำนวนเงิน
+  type: text("type").notNull(),                     // ประเภท: "deposit", "withdrawal", "game_win", "game_loss", "bonus", "transfer"
+  status: text("status").notNull().default("completed"), // สถานะ: "pending", "completed", "failed"
+  note: text("note"),                               // หมายเหตุ
+  balanceAfter: decimal("balance_after", { precision: 10, scale: 2 }), // ยอดเงินหลังธุรกรรม
+  createdAt: timestamp("created_at").notNull().defaultNow(), // วันที่ทำธุรกรรม
 });
 
 // ตารางโพสต์สำหรับโซเชียลมีเดีย
