@@ -67,6 +67,11 @@ export interface IStorage {
   getAllLoanRequests(): Promise<LoanRequest[]>;                             // ดึงคำขอสินเชื่อทั้งหมด (สำหรับแอดมิน)
   updateLoanRequestStatus(id: number, status: string, note?: string): Promise<LoanRequest | undefined>; // อัปเดตสถานะคำขอ
   checkUserEligibility(userId: number): Promise<boolean>;                   // ตรวจสอบสิทธิ์การขอสินเชื่อ
+
+  // การจัดการโปรไฟล์และโอนเครดิต
+  getUserProfile(userId: number): Promise<{ user: User; wallet: CreditWallet; postsCount: number } | undefined>; // ดึงข้อมูลโปรไฟล์ผู้ใช้
+  getUserPosts(userId: number): Promise<Post[]>;                            // ดึงโพสต์ของผู้ใช้
+  transferCredits(fromUserId: number, toUserId: number, amount: string, note?: string): Promise<boolean>; // โอนเครดิต
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
@@ -497,10 +502,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserLoanRequests(userId: number): Promise<LoanRequest[]> {
-    return await db.select()
-      .from(loanRequests)
-      .where(eq(loanRequests.userId, userId))
-      .orderBy(desc(loanRequests.createdAt));
+    try {
+      return await db.select()
+        .from(loanRequests)
+        .where(eq(loanRequests.userId, userId))
+        .orderBy(desc(loanRequests.createdAt));
+    } catch (error) {
+      console.error("Error getting user loan requests:", error);
+      return [];
+    }
   }
 
   async getAllLoanRequests(): Promise<LoanRequest[]> {
@@ -548,6 +558,100 @@ export class DatabaseStorage implements IStorage {
       ));
 
     return pendingLoans.length === 0;
+  }
+
+  // การจัดการโปรไฟล์และโอนเครดิต
+  async getUserProfile(userId: number): Promise<{ user: User; wallet: CreditWallet; postsCount: number } | undefined> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) return undefined;
+
+      const wallet = await this.getUserWallet(userId);
+      if (!wallet) return undefined;
+
+      const postsResult = await db.select({ count: sql`count(*)`.as('count') })
+        .from(posts)
+        .where(eq(posts.userId, userId));
+      
+      const postsCount = Number(postsResult[0]?.count) || 0;
+
+      return { user, wallet, postsCount };
+    } catch (error) {
+      console.error("Error getting user profile:", error);
+      return undefined;
+    }
+  }
+
+  async getUserPosts(userId: number): Promise<Post[]> {
+    try {
+      return await db.select()
+        .from(posts)
+        .where(eq(posts.userId, userId))
+        .orderBy(desc(posts.createdAt))
+        .limit(20);
+    } catch (error) {
+      console.error("Error getting user posts:", error);
+      return [];
+    }
+  }
+
+  async transferCredits(fromUserId: number, toUserId: number, amount: string, note?: string): Promise<boolean> {
+    try {
+      const transferAmount = parseFloat(amount);
+      if (transferAmount <= 0) return false;
+
+      // ตรวจสอบว่าผู้ส่งมีเครดิตเพียงพอ
+      const fromWallet = await this.getUserWallet(fromUserId);
+      if (!fromWallet) return false;
+
+      const fromBalance = parseFloat(fromWallet.balance);
+      if (fromBalance < transferAmount) return false;
+
+      // ตรวจสอบกระเป๋าเงินผู้รับ
+      let toWallet = await this.getUserWallet(toUserId);
+      if (!toWallet) {
+        // สร้างกระเป๋าเงินใหม่ถ้ายังไม่มี
+        toWallet = await this.createUserWallet({
+          userId: toUserId,
+          balance: "0.00"
+        });
+      }
+
+      // คำนวณยอดใหม่
+      const newFromBalance = (fromBalance - transferAmount).toFixed(2);
+      const newToBalance = (parseFloat(toWallet.balance) + transferAmount).toFixed(2);
+
+      // อัปเดตยอดเงินทั้งสองกระเป๋า
+      await this.updateWalletBalance(fromUserId, newFromBalance);
+      await this.updateWalletBalance(toUserId, newToBalance);
+
+      // บันทึกธุรกรรมการโอน (ผู้ส่ง)
+      await this.createCreditTransaction({
+        fromUserId,
+        toUserId,
+        amount: `-${transferAmount}`,
+        type: "transfer_out",
+        status: "completed",
+        note: note || `โอนให้ผู้ใช้ ID: ${toUserId}`,
+        balanceAfter: newFromBalance,
+      });
+
+      // บันทึกธุรกรรมการรับ (ผู้รับ)
+      await this.createCreditTransaction({
+        fromUserId,
+        toUserId,
+        amount: transferAmount.toString(),
+        type: "transfer_in",
+        status: "completed",
+        note: note || `รับโอนจากผู้ใช้ ID: ${fromUserId}`,
+        balanceAfter: newToBalance,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error transferring credits:", error);
+      return false;
+    }
   }
 }
 

@@ -464,5 +464,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API สำหรับระบบโปรไฟล์
+  
+  // ดึงข้อมูลโปรไฟล์ผู้ใช้
+  app.get("/api/profile/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const profile = await storage.getUserProfile(userId);
+      if (profile) {
+        res.json(profile);
+      } else {
+        res.status(404).json({ error: "User profile not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+  });
+
+  // ดึงโพสต์ของผู้ใช้
+  app.get("/api/profile/:userId/posts", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const userPosts = await storage.getUserPosts(userId);
+      
+      // เพิ่มข้อมูลผู้ใช้และสถิติสำหรับแต่ละโพสต์
+      const postsWithDetails = await Promise.all(
+        userPosts.map(async (post) => {
+          const user = await storage.getUser(post.userId);
+          const likes = await storage.getPostLikes(post.id);
+          const comments = await storage.getPostComments(post.id);
+          
+          const likesCount = likes.filter(like => like.type === 'like').length;
+          const dislikesCount = likes.filter(like => like.type === 'dislike').length;
+          
+          return {
+            ...post,
+            user: user ? { id: user.id, name: user.name, username: user.username } : null,
+            likesCount,
+            dislikesCount,
+            commentsCount: comments.length
+          };
+        })
+      );
+
+      res.json(postsWithDetails);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user posts" });
+    }
+  });
+
+  // โอนเครดิต
+  app.post("/api/transfer", async (req, res) => {
+    try {
+      const { fromUserId, toUserId, amount, note } = req.body;
+      
+      if (!fromUserId || !toUserId || !amount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const transferAmount = parseFloat(amount);
+      if (transferAmount <= 0) {
+        return res.status(400).json({ error: "Invalid transfer amount" });
+      }
+
+      if (fromUserId === toUserId) {
+        return res.status(400).json({ error: "Cannot transfer to yourself" });
+      }
+
+      // ตรวจสอบว่าผู้รับมีอยู่จริง
+      const toUser = await storage.getUser(toUserId);
+      if (!toUser) {
+        return res.status(404).json({ error: "Recipient user not found" });
+      }
+
+      const success = await storage.transferCredits(fromUserId, toUserId, amount, note);
+      
+      if (success) {
+        res.json({ success: true, message: "Transfer completed successfully" });
+      } else {
+        res.status(400).json({ error: "Transfer failed - insufficient balance or other error" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to transfer credits" });
+    }
+  });
+
   return httpServer;
 }
