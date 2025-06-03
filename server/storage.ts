@@ -1,4 +1,4 @@
-import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage } from "@shared/schema";
+import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, loanRequests, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage, type LoanRequest, type InsertLoanRequest } from "@shared/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, or, and, sql, isNull } from "drizzle-orm";
@@ -60,6 +60,13 @@ export interface IStorage {
   getPublicMessages(roomId: string): Promise<Message[]>;                    // ดึงข้อความโถงแชทสาธารณะ
   markMessageAsRead(messageId: number): Promise<boolean>;                   // ทำเครื่องหมายข้อความว่าอ่านแล้ว
   getUnreadMessageCount(userId: number): Promise<number>;                   // นับข้อความที่ยังไม่ได้อ่าน
+
+  // การจัดการคำขอสินเชื่อ
+  createLoanRequest(loanRequest: InsertLoanRequest): Promise<LoanRequest>;  // สร้างคำขอสินเชื่อใหม่
+  getUserLoanRequests(userId: number): Promise<LoanRequest[]>;              // ดึงคำขอสินเชื่อของผู้ใช้
+  getAllLoanRequests(): Promise<LoanRequest[]>;                             // ดึงคำขอสินเชื่อทั้งหมด (สำหรับแอดมิน)
+  updateLoanRequestStatus(id: number, status: string, note?: string): Promise<LoanRequest | undefined>; // อัปเดตสถานะคำขอ
+  checkUserEligibility(userId: number): Promise<boolean>;                   // ตรวจสอบสิทธิ์การขอสินเชื่อ
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
@@ -481,6 +488,66 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(and(eq(messages.toUserId, userId), eq(messages.isRead, false)));
     return Number(result[0]?.count) || 0;
+  }
+
+  // การจัดการคำขอสินเชื่อ
+  async createLoanRequest(loanRequest: InsertLoanRequest): Promise<LoanRequest> {
+    const result = await db.insert(loanRequests).values(loanRequest).returning();
+    return result[0];
+  }
+
+  async getUserLoanRequests(userId: number): Promise<LoanRequest[]> {
+    return await db.select()
+      .from(loanRequests)
+      .where(eq(loanRequests.userId, userId))
+      .orderBy(desc(loanRequests.createdAt));
+  }
+
+  async getAllLoanRequests(): Promise<LoanRequest[]> {
+    return await db.select()
+      .from(loanRequests)
+      .orderBy(desc(loanRequests.createdAt));
+  }
+
+  async updateLoanRequestStatus(id: number, status: string, note?: string): Promise<LoanRequest | undefined> {
+    const updateData: any = { status, note };
+    if (status === 'approved') {
+      updateData.approvedAt = new Date();
+    } else if (status === 'rejected') {
+      updateData.rejectedAt = new Date();
+    }
+
+    const result = await db.update(loanRequests)
+      .set(updateData)
+      .where(eq(loanRequests.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async checkUserEligibility(userId: number): Promise<boolean> {
+    // ตรวจสอบว่าผู้ใช้ล็อกอินเกิน 3 วันแล้วหรือไม่
+    const user = await this.getUser(userId);
+    if (!user) return false;
+
+    const accountAgeInDays = Math.floor(
+      (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // ต้องมีบัญชีอย่างน้อย 3 วัน
+    if (accountAgeInDays < 3) return false;
+
+    // ตรวจสอบว่าไม่มีสินเชื่อที่ยังไม่ได้ชำระ
+    const pendingLoans = await db.select()
+      .from(loanRequests)
+      .where(and(
+        eq(loanRequests.userId, userId),
+        or(
+          eq(loanRequests.status, 'pending'),
+          eq(loanRequests.status, 'approved')
+        )
+      ));
+
+    return pendingLoans.length === 0;
   }
 }
 

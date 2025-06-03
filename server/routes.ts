@@ -355,5 +355,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API สำหรับระบบสินเชื่อ
+  
+  // สร้างคำขอสินเชื่อใหม่
+  app.post("/api/loans", async (req, res) => {
+    try {
+      const { userId, amount, interestRate, totalAmount, dueDate } = req.body;
+      
+      if (!userId || !amount || !totalAmount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // ตรวจสอบสิทธิ์ของผู้ใช้
+      const isEligible = await storage.checkUserEligibility(userId);
+      if (!isEligible) {
+        return res.status(403).json({ 
+          error: "Not eligible for loan",
+          message: "บัญชีต้องมีอายุอย่างน้อย 3 วันและไม่มีสินเชื่อค้างชำระ"
+        });
+      }
+
+      const newLoan = await storage.createLoanRequest({
+        userId,
+        amount,
+        interestRate: interestRate || "5.00",
+        totalAmount,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        status: "pending",
+        note: null,
+      });
+
+      res.json(newLoan);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create loan request" });
+    }
+  });
+
+  // ดึงคำขอสินเชื่อของผู้ใช้
+  app.get("/api/loans/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const loans = await storage.getUserLoanRequests(userId);
+      res.json(loans);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user loans" });
+    }
+  });
+
+  // ดึงคำขอสินเชื่อทั้งหมด (สำหรับแอดมิน)
+  app.get("/api/loans", async (req, res) => {
+    try {
+      const loans = await storage.getAllLoanRequests();
+      
+      // เพิ่มข้อมูลผู้ใช้สำหรับแต่ละคำขอ
+      const loansWithUsers = await Promise.all(
+        loans.map(async (loan) => {
+          const user = await storage.getUser(loan.userId);
+          return {
+            ...loan,
+            user: user ? { id: user.id, name: user.name, username: user.username, email: user.email } : null,
+          };
+        })
+      );
+
+      res.json(loansWithUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch loans" });
+    }
+  });
+
+  // อัปเดตสถานะคำขอสินเชื่อ
+  app.patch("/api/loans/:loanId/status", async (req, res) => {
+    try {
+      const loanId = parseInt(req.params.loanId);
+      const { status, note } = req.body;
+      
+      if (isNaN(loanId) || !status) {
+        return res.status(400).json({ error: "Invalid loan ID or status" });
+      }
+
+      const updatedLoan = await storage.updateLoanRequestStatus(loanId, status, note);
+      if (updatedLoan) {
+        res.json(updatedLoan);
+      } else {
+        res.status(404).json({ error: "Loan request not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update loan status" });
+    }
+  });
+
+  // ตรวจสอบสิทธิ์การขอสินเชื่อ
+  app.get("/api/loans/eligibility/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const isEligible = await storage.checkUserEligibility(userId);
+      res.json({ eligible: isEligible });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check eligibility" });
+    }
+  });
+
   return httpServer;
 }

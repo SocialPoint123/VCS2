@@ -82,6 +82,21 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// ตารางคำขอสินเชื่อ
+export const loanRequests = pgTable("loan_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // จำนวนเงินขอสินเชื่อ
+  interestRate: decimal("interest_rate", { precision: 5, scale: 2 }).default("5.00"), // อัตราดอกเบี้ยต่อชั่วโมง (%)
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(), // ยอดรวมที่ต้องชำระ
+  status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'paid'
+  dueDate: timestamp("due_date"), // วันที่ครบกำหนดชำระ
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  note: text("note"), // หมายเหตุจากแอดมิน
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -124,6 +139,13 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   isRead: true,
 });
 
+export const insertLoanRequestSchema = createInsertSchema(loanRequests).omit({
+  id: true,
+  createdAt: true,
+  approvedAt: true,
+  rejectedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -142,3 +164,6 @@ export type InsertPostLike = z.infer<typeof insertPostLikeSchema>;
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+export type LoanRequest = typeof loanRequests.$inferSelect;
+export type InsertLoanRequest = z.infer<typeof insertLoanRequestSchema>;
