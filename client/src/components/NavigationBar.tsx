@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   User,
-  Wallet
+  Wallet,
+  Store
 } from "lucide-react";
 import { useState } from "react";
 
@@ -43,6 +44,12 @@ export default function NavigationBar() {
       label: "แชท",
       icon: MessageSquare,
       active: location.startsWith("/chat")
+    },
+    {
+      path: "/shop",
+      label: "ร้านค้า",
+      icon: Store,
+      active: location.startsWith("/shop")
     },
     {
       path: "/wallet",

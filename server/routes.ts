@@ -725,5 +725,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API สำหรับระบบร้านค้า
+  
+  // ดึงไอเทมทั้งหมดในร้านค้า
+  app.get("/api/shop/items", async (req, res) => {
+    try {
+      const type = req.query.type as string;
+      const rarity = req.query.rarity as string;
+      
+      let items;
+      if (type) {
+        items = await storage.getShopItemsByType(type);
+      } else if (rarity) {
+        items = await storage.getShopItemsByRarity(rarity);
+      } else {
+        items = await storage.getAllShopItems();
+      }
+      
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch shop items" });
+    }
+  });
+
+  // ดึงข้อมูลไอเทมเดี่ยว
+  app.get("/api/shop/items/:itemId", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      if (isNaN(itemId)) {
+        return res.status(400).json({ error: "Invalid item ID" });
+      }
+
+      const item = await storage.getShopItemById(itemId);
+      if (item) {
+        res.json(item);
+      } else {
+        res.status(404).json({ error: "Item not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch item" });
+    }
+  });
+
+  // ซื้อไอเทม
+  app.post("/api/shop/purchase", async (req, res) => {
+    try {
+      const { userId, itemId } = req.body;
+      
+      if (!userId || !itemId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const success = await storage.purchaseItem(userId, itemId);
+      
+      if (success) {
+        res.json({ success: true, message: "ซื้อไอเทมสำเร็จ!" });
+      } else {
+        res.status(400).json({ error: "Purchase failed - insufficient balance, item unavailable, or already owned" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to purchase item" });
+    }
+  });
+
+  // ดึงไอเทมของผู้ใช้
+  app.get("/api/shop/user-items/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const userItems = await storage.getUserItems(userId);
+      res.json(userItems);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user items" });
+    }
+  });
+
+  // ตรวจสอบความเป็นเจ้าของไอเทม
+  app.get("/api/shop/user-items/:userId/check/:itemId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const itemId = parseInt(req.params.itemId);
+      
+      if (isNaN(userId) || isNaN(itemId)) {
+        return res.status(400).json({ error: "Invalid user ID or item ID" });
+      }
+
+      const owns = await storage.checkUserOwnsItem(userId, itemId);
+      res.json({ owns });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check item ownership" });
+    }
+  });
+
   return httpServer;
 }
