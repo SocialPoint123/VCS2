@@ -1,4 +1,4 @@
-import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, loanRequests, shopItems, userItems, pets, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage, type LoanRequest, type InsertLoanRequest, type ShopItem, type UserItem, type Pet } from "@shared/schema";
+import { users, loginLogs, creditWallets, creditTransactions, posts, comments, postLikes, messages, loanRequests, shopItems, userItems, userActiveItems, pets, type User, type InsertUser, type LoginLog, type InsertLoginLog, type CreditWallet, type InsertCreditWallet, type CreditTransaction, type InsertCreditTransaction, type Post, type InsertPost, type Comment, type InsertComment, type PostLike, type InsertPostLike, type Message, type InsertMessage, type LoanRequest, type InsertLoanRequest, type ShopItem, type UserItem, type Pet } from "@shared/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, or, and, sql, isNull } from "drizzle-orm";
@@ -1059,13 +1059,21 @@ export class DatabaseStorage implements IStorage {
         throw new Error("User does not own this item");
       }
 
-      // ใช้ raw SQL เพื่อ upsert ไอเทมที่ใช้งาน
-      await client.query(`
-        INSERT INTO user_active_items (user_id, item_id, type, activated_at)
-        VALUES ($1, $2, $3, NOW())
-        ON CONFLICT (user_id, type)
-        DO UPDATE SET item_id = EXCLUDED.item_id, activated_at = EXCLUDED.activated_at
-      `, [userId, itemId, type]);
+      // ใช้ Drizzle ORM เพื่อ upsert ไอเทมที่ใช้งาน
+      await db.insert(userActiveItems)
+        .values({
+          userId,
+          itemId,
+          type,
+          activatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [userActiveItems.userId, userActiveItems.type],
+          set: {
+            itemId,
+            activatedAt: new Date()
+          }
+        });
 
       return true;
     } catch (error) {

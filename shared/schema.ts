@@ -165,6 +165,16 @@ export const userItems = pgTable("user_items", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userActiveItems = pgTable("user_active_items", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  itemId: integer("item_id").notNull().references(() => shopItems.id),
+  type: text("type").notNull(),
+  activatedAt: timestamp("activated_at").defaultNow(),
+}, (table) => ({
+  userTypeIdx: uniqueIndex("user_active_items_user_type_idx").on(table.userId, table.type),
+}));
+
 export const insertShopItemSchema = createInsertSchema(shopItems).omit({
   id: true,
   createdAt: true,
