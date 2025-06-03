@@ -372,16 +372,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API สำหรับสร้างโพสต์ใหม่
-  app.post("/api/posts", async (req, res) => {
+  app.post("/api/posts", requireAuth, async (req: any, res) => {
     try {
-      const { userId, content, mediaUrl, mediaType } = req.body;
+      const { content, mediaUrl, mediaType } = req.body;
       
-      if (!userId || !content) {
+      if (!content) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
       const newPost = await storage.createPost({
-        userId,
+        userId: req.userId, // ใช้ userId จาก authentication middleware
         content,
         mediaUrl: mediaUrl || null,
         mediaType: mediaType || null
@@ -483,16 +483,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API สำหรับระบบแชท
   
   // ส่งข้อความใหม่
-  app.post("/api/messages", async (req, res) => {
+  app.post("/api/messages", requireAuth, async (req: any, res) => {
     try {
-      const { fromUserId, toUserId, roomId, message, messageType } = req.body;
+      const { toUserId, roomId, message, messageType } = req.body;
       
-      if (!fromUserId || !message) {
+      if (!message) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
       const newMessage = await storage.createMessage({
-        fromUserId,
+        fromUserId: req.userId,
         toUserId: toUserId || null,
         roomId: roomId || null,
         message,
