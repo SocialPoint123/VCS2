@@ -5,7 +5,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SidebarNavigation from "@/components/SidebarNavigation";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
+import LoginPage from "@/pages/login";
+import RegisterPage from "@/pages/register";
 import AdminDashboard from "@/pages/admin";
 import FeedPage from "@/pages/feed";
 import ViewPostPage from "@/pages/post/[id]";
@@ -19,7 +22,7 @@ import PetPage from "@/pages/pet";
 import InventoryPage from "@/pages/inventory";
 import ShopManagement from "@/pages/admin/shop-management";
 
-function Router() {
+function AuthenticatedApp() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <SidebarNavigation />
@@ -44,6 +47,33 @@ function Router() {
       </main>
     </div>
   );
+}
+
+function UnauthenticatedApp() {
+  return (
+    <Switch>
+      <Route path="/register" component={RegisterPage} />
+      <Route path="/login" component={LoginPage} />
+      <Route component={LoginPage} />
+    </Switch>
+  );
+}
+
+function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">กำลังโหลด...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <AuthenticatedApp /> : <UnauthenticatedApp />;
 }
 
 function App() {
