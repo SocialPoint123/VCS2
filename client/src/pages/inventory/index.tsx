@@ -168,8 +168,20 @@ export default function InventoryPage() {
     );
   };
 
+  const getActiveItemDate = (itemId: number, type: string) => {
+    const activeItem = activeItems.find((active: ActiveItem) => 
+      active.itemId === itemId && active.type === type
+    );
+    return activeItem?.activatedAt;
+  };
+
   const handleActivateItem = (itemId: number, type: string) => {
     activateItemMutation.mutate({ itemId, type });
+  };
+
+  const deactivateItem = (itemId: number, type: string) => {
+    // สำหรับอนาคต: การปิดใช้งานไอเทม
+    console.log("Deactivating item:", itemId, type);
   };
 
   const filterItemsByType = (type: string) => {
@@ -341,14 +353,26 @@ export default function InventoryPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filterItemsByType(category.key).map((userItem: UserItem) => (
-                    <Card 
-                      key={userItem.id} 
-                      className={`relative transition-all duration-200 hover:shadow-lg ${
-                        isItemActive(userItem.item.id, userItem.item.type) 
-                          ? 'ring-2 ring-green-500 bg-green-50' 
-                          : ''
-                      }`}
+                    <ItemTooltip
+                      key={userItem.id}
+                      item={userItem.item}
+                      isOwned={true}
+                      isActive={isItemActive(userItem.item.id, userItem.item.type)}
+                      purchaseDate={userItem.createdAt}
+                      activationDate={getActiveItemDate(userItem.item.id, userItem.item.type)}
+                      onActivate={() => activateItemMutation.mutate({
+                        itemId: userItem.item.id,
+                        type: userItem.item.type
+                      })}
+                      onDeactivate={() => deactivateItem(userItem.item.id, userItem.item.type)}
                     >
+                      <Card 
+                        className={`relative transition-all duration-200 hover:shadow-lg cursor-pointer ${
+                          isItemActive(userItem.item.id, userItem.item.type) 
+                            ? 'ring-2 ring-green-500 bg-green-50' 
+                            : 'hover:ring-2 hover:ring-blue-200'
+                        }`}
+                      >
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -414,6 +438,7 @@ export default function InventoryPage() {
                         </div>
                       )}
                     </Card>
+                    </ItemTooltip>
                   ))}
                 </div>
               )}
