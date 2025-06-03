@@ -1020,7 +1020,7 @@ export class DatabaseStorage implements IStorage {
           price: shopItems.price,
           type: shopItems.type,
           rarity: shopItems.rarity,
-          imageUrl: shopItems.imageUrl,
+          imageUrl: shopItems.mediaUrl,
         }
       })
       .from(userItems)
