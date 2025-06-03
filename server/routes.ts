@@ -1,12 +1,222 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import bcrypt from "bcrypt";
+import { z } from "zod";
+
+// Session storage for authenticated users
+const userSessions = new Map<string, { userId: number; timestamp: number }>();
+
+// Helper function to generate session ID
+function generateSessionId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// Helper function to verify session
+function verifySession(sessionId: string): number | null {
+  const session = userSessions.get(sessionId);
+  if (!session) return null;
+  
+  // Session expires after 24 hours
+  if (Date.now() - session.timestamp > 24 * 60 * 60 * 1000) {
+    userSessions.delete(sessionId);
+    return null;
+  }
+  
+  return session.userId;
+}
+
+// Middleware to check authentication
+function requireAuth(req: any, res: any, next: any) {
+  const sessionId = req.headers['x-session-id'] || req.cookies?.sessionId;
+  const userId = verifySession(sessionId);
+  
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  req.userId = userId;
+  next();
+}
+
+// Schema for validation
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+const registerSchema = z.object({
+  username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/),
+  email: z.string().email(),
+  name: z.string().min(1),
+  password: z.string().min(6),
+});
 
 /**
  * ลงทะเบียน API routes สำหรับระบบแอดมิน
  * ครอบคลุมการจัดการผู้ใช้ สถิติ ประวัติล็อกอิน และธุรกรรมเครดิต
  */
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ==================== Authentication Routes ====================
+  
+  // Register new user
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = registerSchema.parse(req.body);
+      
+      // Check if username or email already exists
+      const existingUser = await storage.getUserByUsername(validatedData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "ชื่อผู้ใช้นี้มีอยู่แล้ว" });
+      }
+      
+      const existingEmail = await storage.getUserByEmail(validatedData.email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "อีเมลนี้มีอยู่แล้ว" });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      // Create user
+      const newUser = await storage.createUser({
+        username: validatedData.username,
+        email: validatedData.email,
+        name: validatedData.name,
+        password: hashedPassword,
+        role: "user",
+        status: "active"
+      });
+      
+      // Create wallet for new user
+      await storage.createUserWallet({
+        userId: newUser.id,
+        balance: "1000.00" // เครดิตเริ่มต้น 1000 บาท
+      });
+      
+      // Create session
+      const sessionId = generateSessionId();
+      userSessions.set(sessionId, { userId: newUser.id, timestamp: Date.now() });
+      
+      // Log the registration
+      await storage.createLoginLog({
+        userId: newUser.id,
+        ip: req.ip || "unknown",
+        userAgent: req.get("User-Agent") || "unknown",
+        fingerprint: req.get("X-Fingerprint") || null,
+        status: "success"
+      });
+      
+      // Return user data (without password)
+      const { password, ...userWithoutPassword } = newUser;
+      res.json({
+        user: { ...userWithoutPassword, isAdmin: newUser.role === "admin" },
+        sessionId
+      });
+      
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "ข้อมูลไม่ถูกต้อง", errors: error.errors });
+      }
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาดในการสมัครสมาชิก" });
+    }
+  });
+  
+  // Login user
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      // Find user by username
+      const user = await storage.getUserByUsername(validatedData.username);
+      if (!user) {
+        return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      }
+      
+      // Check password
+      const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
+      if (!isPasswordValid) {
+        // Log failed login
+        await storage.createLoginLog({
+          userId: user.id,
+          ip: req.ip || "unknown",
+          userAgent: req.get("User-Agent") || "unknown",
+          fingerprint: req.get("X-Fingerprint") || null,
+          status: "failure"
+        });
+        
+        return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      }
+      
+      // Check if user is active
+      if (user.status !== "active") {
+        return res.status(403).json({ message: "บัญชีนี้ถูกระงับการใช้งาน" });
+      }
+      
+      // Create session
+      const sessionId = generateSessionId();
+      userSessions.set(sessionId, { userId: user.id, timestamp: Date.now() });
+      
+      // Log successful login
+      await storage.createLoginLog({
+        userId: user.id,
+        ip: req.ip || "unknown",
+        userAgent: req.get("User-Agent") || "unknown",
+        fingerprint: req.get("X-Fingerprint") || null,
+        status: "success"
+      });
+      
+      // Return user data (without password)
+      const { password, ...userWithoutPassword } = user;
+      res.json({
+        user: { ...userWithoutPassword, isAdmin: user.role === "admin" },
+        sessionId
+      });
+      
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "ข้อมูลไม่ถูกต้อง" });
+      }
+      console.error("Login error:", error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาดในการเข้าสู่ระบบ" });
+    }
+  });
+  
+  // Get current user info
+  app.get("/api/auth/me", requireAuth, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: "ไม่พบผู้ใช้" });
+      }
+      
+      const { password, ...userWithoutPassword } = user;
+      res.json({
+        user: { ...userWithoutPassword, isAdmin: user.role === "admin" }
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+    }
+  });
+  
+  // Logout user
+  app.post("/api/auth/logout", requireAuth, async (req: any, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] || req.cookies?.sessionId;
+      if (sessionId) {
+        userSessions.delete(sessionId);
+      }
+      res.json({ message: "ออกจากระบบสำเร็จ" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+    }
+  });
+
+  // ==================== Admin Routes ====================
+  
   // API สำหรับดึงสถิติภาพรวมระบบ
   app.get("/api/admin/dashboard-stats", async (req, res) => {
     try {
