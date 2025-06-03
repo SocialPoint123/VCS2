@@ -202,3 +202,26 @@ export type InsertShopItem = z.infer<typeof insertShopItemSchema>;
 
 export type UserItem = typeof userItems.$inferSelect;
 export type InsertUserItem = z.infer<typeof insertUserItemSchema>;
+
+export const pets = pgTable("pets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: text("type").default("cat"),
+  name: text("name").default("สัตว์เลี้ยงของฉัน"),
+  energy: integer("energy").default(100),
+  mood: integer("mood").default(100),
+  level: integer("level").default(1),
+  experience: integer("experience").default(0),
+  lastCollectedAt: timestamp("last_collected_at").defaultNow(),
+  lastFedAt: timestamp("last_fed_at").defaultNow(),
+  lastPlayedAt: timestamp("last_played_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPetSchema = createInsertSchema(pets).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Pet = typeof pets.$inferSelect;
+export type InsertPet = z.infer<typeof insertPetSchema>;
