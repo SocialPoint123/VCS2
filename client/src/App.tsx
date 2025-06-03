@@ -6,12 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import AdminDashboard from "@/pages/admin";
 import FeedPage from "@/pages/feed";
+import ViewPostPage from "@/pages/post/[id]";
 
 function Router() {
   return (
     <Switch>
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/feed" component={FeedPage} />
+      <Route path="/post/:id" component={ViewPostPage} />
       <Route path="/" component={FeedPage} />
       <Route component={NotFound} />
     </Switch>

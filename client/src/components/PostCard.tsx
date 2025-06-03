@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CommentSection from "@/components/CommentSection";
-import { Heart, MessageCircle, ThumbsDown, ThumbsUp, ExternalLink, Play } from "lucide-react";
+import { Heart, MessageCircle, ThumbsDown, ThumbsUp, ExternalLink, Play, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -25,6 +26,7 @@ interface PostCardProps {
     commentsCount: number;
   };
   onUpdate: () => void; // ฟังก์ชันรีเฟรชข้อมูล
+  defaultShowComments?: boolean; // แสดงคอมเมนต์โดยอัตโนมัติ
 }
 
 /**
@@ -32,8 +34,8 @@ interface PostCardProps {
  * รองรับการแสดงข้อความ รูปภาพ วิดีโอ และลิงก์
  * มีฟีเจอร์ไลค์/ดิสไลค์และคอมเมนต์
  */
-export default function PostCard({ post, onUpdate }: PostCardProps) {
-  const [showComments, setShowComments] = useState(false);
+export default function PostCard({ post, onUpdate, defaultShowComments = false }: PostCardProps) {
+  const [showComments, setShowComments] = useState(defaultShowComments);
   const [isLiking, setIsLiking] = useState(false);
 
   // ดึงสถานะไลค์ของผู้ใช้ปัจจุบัน (Mock user ID = 2)
@@ -219,6 +221,20 @@ export default function PostCard({ post, onUpdate }: PostCardProps) {
               <MessageCircle className="h-4 w-4" />
               <span>{post.commentsCount}</span>
             </Button>
+
+            {/* ปุ่มดูรายละเอียด (แสดงเฉพาะในหน้า Feed) */}
+            {!defaultShowComments && (
+              <Link href={`/post/${post.id}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center space-x-1 text-gray-500 hover:text-purple-500"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>ดูรายละเอียด</span>
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* สถิติการมีส่วนร่วม */}

@@ -14,36 +14,47 @@ import { Plus, Users } from "lucide-react";
 export default function FeedPage() {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [mediaType, setMediaType] = useState<"image" | "video" | "link" | "">("");
+  const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   // ดึงข้อมูลโพสต์ทั้งหมด
   const { data: posts, isLoading, refetch } = useQuery({
     queryKey: ["/api/posts"],
   });
 
-  // ฟังก์ชันสร้างโพสต์ใหม่ (Mock user ID = 2 สำหรับการทดสอบ)
+  // จัดการการเลือกไฟล์
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
+    }
+  };
+
+  // ฟังก์ชันสร้างโพสต์ใหม่
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
 
     try {
+      const formData = new FormData();
+      formData.append("userId", 2); // Mock user ID
+      formData.append("content", newPostContent);
+      if (file) {
+        formData.append("media", file);
+        formData.append("mediaType", "image");
+      }
+
       const response = await fetch("/api/posts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: 2, // Mock user ID - ในการใช้งานจริงควรดึงจาก authentication
-          content: newPostContent,
-          mediaUrl: mediaUrl || null,
-          mediaType: mediaType || null,
-        }),
+        body: formData,
       });
 
       if (response.ok) {
         setNewPostContent("");
-        setMediaUrl("");
-        setMediaType("");
+        setFile(null);
+        setPreviewUrl("");
         setIsCreatePostOpen(false);
-        refetch(); // รีเฟรชรายการโพสต์
+        refetch();
       }
     } catch (error) {
       console.error("Error creating post:", error);
@@ -79,114 +90,55 @@ export default function FeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Users className="h-6 w-6 text-blue-500" />
-              <h1 className="text-xl font-bold text-gray-900">BergDotBet Community</h1>
-            </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Social Feed
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <Button
+              className="w-full"
               onClick={() => setIsCreatePostOpen(!isCreatePostOpen)}
-              className="bg-blue-500 hover:bg-blue-600"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              โพสต์ใหม่
+              <Plus className="mr-2 h-4 w-4" /> Create Post
             </Button>
-          </div>
-        </div>
-      </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Create Post Card */}
-        {isCreatePostOpen && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">สร้างโพสต์ใหม่</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="แชร์ประสบการณ์หรือเทคนิคการเล่นของคุณ..."
-                value={newPostContent}
-                onChange={(e) => setNewPostContent(e.target.value)}
-                className="min-h-[100px]"
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    URL รูปภาพ/วิดีโอ/ลิงก์ (ไม่บังคับ)
-                  </label>
-                  <Input
-                    placeholder="https://example.com/image.jpg"
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
+            {isCreatePostOpen && (
+              <div className="mt-4 space-y-4">
+                <Textarea
+                  placeholder="What's on your mind?"
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  className="min-h-[100px]"
+                />
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="max-w-full h-auto rounded-md"
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ประเภทสื่อ
-                  </label>
-                  <select
-                    value={mediaType}
-                    onChange={(e) => setMediaType(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">ไม่มีสื่อ</option>
-                    <option value="image">รูปภาพ</option>
-                    <option value="video">วิดีโอ</option>
-                    <option value="link">ลิงก์</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreatePostOpen(false)}
-                >
-                  ยกเลิก
-                </Button>
-                <Button
-                  onClick={handleCreatePost}
-                  disabled={!newPostContent.trim()}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  โพสต์
+                )}
+                <Button onClick={handleCreatePost} disabled={!newPostContent.trim()}>
+                  Post
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Posts Feed */}
         <div className="space-y-6">
-          {posts && posts.length > 0 ? (
-            posts.map((post: any) => (
-              <PostCard key={post.id} post={post} onUpdate={refetch} />
-            ))
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  ยังไม่มีโพสต์
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  เป็นคนแรกที่แชร์ประสบการณ์ในชุมชน BergDotBet
-                </p>
-                <Button
-                  onClick={() => setIsCreatePostOpen(true)}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  สร้างโพสต์แรก
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {posts?.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
         </div>
       </div>
     </div>
