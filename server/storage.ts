@@ -91,6 +91,11 @@ export interface IStorage {
   createPet(userId: number, type: string, name: string): Promise<Pet>;      // สร้างสัตว์เลี้ยงใหม่
   updatePet(userId: number, updates: Partial<Pet>): Promise<Pet | undefined>; // อัปเดตข้อมูลสัตว์เลี้ยง
   performPetAction(userId: number, action: string): Promise<{ pet: Pet; reward?: number; message: string }>; // ดำเนินการกับสัตว์เลี้ยง
+
+  // การจัดการกระเป๋าไอเทม
+  getUserInventory(userId: number): Promise<any[]>;                         // ดึงไอเทมที่เป็นเจ้าของ
+  getUserActiveItems(userId: number): Promise<any[]>;                       // ดึงไอเทมที่กำลังใช้งาน
+  activateItem(userId: number, itemId: number, type: string): Promise<boolean>; // เปิดใช้งานไอเทม
 }
 
 // การเชื่อมต่อฐานข้อมูล Supabase ผ่าน postgres driver
@@ -996,6 +1001,75 @@ export class DatabaseStorage implements IStorage {
       return { pet: updatedPet, reward, message };
     } catch (error) {
       console.error("Error performing pet action:", error);
+      throw error;
+    }
+  }
+
+  // การจัดการกระเป๋าไอเทม
+  async getUserInventory(userId: number): Promise<any[]> {
+    try {
+      const result = await db.select({
+        id: userItems.id,
+        userId: userItems.userId,
+        itemId: userItems.itemId,
+        createdAt: userItems.createdAt,
+        item: {
+          id: shopItems.id,
+          name: shopItems.name,
+          description: shopItems.description,
+          price: shopItems.price,
+          type: shopItems.type,
+          rarity: shopItems.rarity,
+          imageUrl: shopItems.imageUrl,
+        }
+      })
+      .from(userItems)
+      .leftJoin(shopItems, eq(userItems.itemId, shopItems.id))
+      .where(eq(userItems.userId, userId))
+      .orderBy(desc(userItems.createdAt));
+
+      return result;
+    } catch (error) {
+      console.error("Error getting user inventory:", error);
+      return [];
+    }
+  }
+
+  async getUserActiveItems(userId: number): Promise<any[]> {
+    try {
+      // ใช้ raw SQL เพื่อหลีกเลี่ยงปัญหา schema
+      const result = await client.query(`
+        SELECT item_id as "itemId", type 
+        FROM user_active_items 
+        WHERE user_id = $1
+      `, [userId]);
+
+      return result.rows;
+    } catch (error) {
+      console.error("Error getting user active items:", error);
+      return [];
+    }
+  }
+
+  async activateItem(userId: number, itemId: number, type: string): Promise<boolean> {
+    try {
+      // ตรวจสอบว่าผู้ใช้เป็นเจ้าของไอเทมนี้
+      const owns = await this.checkUserOwnsItem(userId, itemId);
+      if (!owns) {
+        throw new Error("User does not own this item");
+      }
+
+      // ใช้ raw SQL เพื่อ upsert ไอเทมที่ใช้งาน
+      await client.query(`
+        INSERT INTO user_active_items (user_id, item_id, type, activated_at)
+        VALUES ($1, $2, $3, NOW())
+        ON CONFLICT (user_id, type)
+        DO UPDATE SET item_id = EXCLUDED.item_id, activated_at = EXCLUDED.activated_at
+      `, [userId, itemId, type]);
+
+      return true;
+    } catch (error) {
+      console.error("Error activating item:", error);
       throw error;
     }
   }

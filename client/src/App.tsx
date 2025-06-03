@@ -15,6 +15,7 @@ import ProfilePage from "@/pages/profile";
 import WalletPage from "@/pages/wallet";
 import ShopPage from "@/pages/shop";
 import PetPage from "@/pages/pet";
+import InventoryPage from "@/pages/inventory";
 import ShopManagement from "@/pages/admin/shop-management";
 
 function Router() {
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/loan" component={LoanPage} />
         <Route path="/wallet" component={WalletPage} />
         <Route path="/shop" component={ShopPage} />
+        <Route path="/inventory" component={InventoryPage} />
         <Route path="/pet" component={PetPage} />
         <Route path="/profile/:userId" component={ProfilePage} />
         <Route path="/profile" component={ProfilePage} />

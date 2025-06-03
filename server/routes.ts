@@ -1022,5 +1022,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===============================
+  // Inventory API Routes
+  // ===============================
+
+  // ดึงไอเทมในกระเป๋าของผู้ใช้
+  app.get("/api/inventory/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const inventory = await storage.getUserInventory(userId);
+      res.json(inventory);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ดึงไอเทมที่กำลังใช้งาน
+  app.get("/api/inventory/:userId/active", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const activeItems = await storage.getUserActiveItems(userId);
+      res.json(activeItems);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // เปิดใช้งานไอเทม
+  app.post("/api/inventory/activate", async (req, res) => {
+    try {
+      const { userId, itemId, type } = req.body;
+      
+      if (!userId || !itemId || !type) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const success = await storage.activateItem(userId, itemId, type);
+      if (!success) {
+        return res.status(400).json({ error: "Failed to activate item" });
+      }
+
+      res.json({ success: true, message: "Item activated successfully" });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
   return httpServer;
 }
