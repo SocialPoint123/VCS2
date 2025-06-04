@@ -1,8 +1,8 @@
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
-import { Avatar, AvatarFallback } from "../components/ui/avatar";
-import { Card, CardContent } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { Avatar, AvatarFallback } from "./avatar";
+import { Card, CardContent } from "./card";
+import { Badge } from "./badge";
 import type { ChatMessage } from "../modules/chat/chatService";
 
 interface MessageProps {

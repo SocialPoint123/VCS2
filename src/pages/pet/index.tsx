@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
-import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../.././card";
+import { Button } from "../.././button";
+import { Input } from "../.././input";
+import { Label } from "../.././label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../.././dialog";
+import { Alert, AlertDescription } from "../.././alert";
 import { 
   ArrowLeft, 
   PawPrint, 

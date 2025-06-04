@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
-import { Badge } from "../../../components/ui/badge";
-import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../.././card";
+import { Button } from "../.././button";
+import { Input } from "../.././input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../.././tabs";
+import { Badge } from "../.././badge";
+import { Alert, AlertDescription } from "../.././alert";
 import { 
   ArrowLeft, 
   Search, 

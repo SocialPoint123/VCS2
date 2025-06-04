@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../.././card";
+import { Button } from "../.././button";
+import { Input } from "../.././input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../.././form";
 import { Link, useLocation } from "wouter";
 import { UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";

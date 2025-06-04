@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { ScrollArea } from "../components/ui/scroll-area";
+import { Button } from "./button";
+import { Input } from "./input";
+import { Card, CardContent, CardHeader, CardTitle } from "./card";
+import { ScrollArea } from "./scroll-area";
 import { Send, Loader2 } from "lucide-react";
 import Message from "./Message";
 import { useSendMessage } from "../modules/chat/useChat";

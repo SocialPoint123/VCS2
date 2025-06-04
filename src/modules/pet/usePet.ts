@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { petService, type Pet, type PetAction, type PetStats } from "./petService";
-import { useToast } from "../hooks/use-toast";
+import { useToast } from "../../hooks/use-toast";
 
 /**
  * Custom hooks สำหรับระบบสัตว์เลี้ยง

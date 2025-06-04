@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Skeleton } from "../components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "./card";
+import { Button } from "./button";
+import { Badge } from "./badge";
+import { Skeleton } from "./skeleton";
 import { 
   MessageSquare, 
   ThumbsUp, 

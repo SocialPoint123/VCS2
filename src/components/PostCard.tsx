@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
+import { Card, CardContent } from "./card";
+import { Button } from "./button";
+import { Badge } from "./badge";
 import CommentSection from "../components/CommentSection";
 import { Heart, MessageCircle, ThumbsDown, ThumbsUp, ExternalLink, Play, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";

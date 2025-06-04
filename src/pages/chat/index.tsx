@@ -1,7 +1,7 @@
 import { Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Badge } from "../../../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../.././card";
+import { Button } from "../.././button";
+import { Badge } from "../.././badge";
 import ChatBox from "../../components/chat/ChatBox";
 import { usePublicMessages, useSendMessage } from "../../modules/chat/useChat";
 import { MessageSquare, Users, Crown, Settings } from "lucide-react";

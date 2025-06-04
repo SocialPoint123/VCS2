@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { Badge } from "../components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
+import { Badge } from "./badge";
 
 interface CreditTransaction {
   id: number;

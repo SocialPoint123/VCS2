@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { profileService, type TransferCreditsData, type UserProfile, type UserPost } from "./profileService";
-import { useToast } from "../hooks/use-toast";
+import { useToast } from "../../hooks/use-toast";
 
 /**
  * Custom hooks สำหรับระบบโปรไฟล์ผู้ใช้

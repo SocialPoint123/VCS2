@@ -1,4 +1,4 @@
-import { apiRequest } from "../lib/queryClient";
+import { apiRequest } from "../../lib/queryClient";
 
 export interface ChatMessage {
   id: number;

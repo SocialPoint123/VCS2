@@ -6,7 +6,7 @@ import UserManagementTable from "../../components/admin/UserManagementTable";
 import LoginLogsModal from "../../components/admin/LoginLogsModal";
 import CreditLogsModal from "../../components/admin/CreditLogsModal";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
-import { Card, CardContent } from "../../../components/ui/card";
+import { Card, CardContent } from "../.././card";
 import { AlertCircle } from "lucide-react";
 
 export default function AdminDashboard() {

@@ -27,62 +27,69 @@ function AuthenticatedApp() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <SidebarNavigation />
-      <main className="flex-1 ml-64 p-6">
+      <div className="flex-1">
         <Switch>
           <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/shop" component={ShopManagement} />
+          <Route path="/admin/shop-management" component={ShopManagement} />
           <Route path="/feed" component={FeedPage} />
           <Route path="/post/:id" component={ViewPostPage} />
           <Route path="/chat" component={PublicChatPage} />
           <Route path="/chat/:userId" component={PrivateChatPage} />
           <Route path="/loan" component={LoanPage} />
+          <Route path="/profile" component={ProfilePage} />
           <Route path="/wallet" component={WalletPage} />
           <Route path="/shop" component={ShopPage} />
-          <Route path="/inventory" component={InventoryPage} />
           <Route path="/pet" component={PetPage} />
-          <Route path="/profile/:userId" component={ProfilePage} />
-          <Route path="/profile" component={ProfilePage} />
+          <Route path="/inventory" component={InventoryPage} />
           <Route path="/" component={FeedPage} />
           <Route component={NotFound} />
         </Switch>
-      </main>
+      </div>
     </div>
   );
 }
 
 function UnauthenticatedApp() {
   return (
-    <Switch>
-      <Route path="/register" component={RegisterPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route component={LoginPage} />
-    </Switch>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Switch>
+        <Route path="/register" component={RegisterPage} />
+        <Route path="/" component={LoginPage} />
+        <Route component={LoginPage} />
+      </Switch>
+    </div>
   );
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
           <p className="mt-4 text-gray-600">กำลังโหลด...</p>
         </div>
       </div>
     );
   }
 
-  return isAuthenticated ? <AuthenticatedApp /> : <UnauthenticatedApp />;
+  return user ? <AuthenticatedApp /> : <UnauthenticatedApp />;
 }
 
 function App() {
+  const { theme } = useTheme();
+
+  React.useEffect(() => {
+    document.documentElement.className = theme;
+  }, [theme]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
         <Router />
+        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
   );

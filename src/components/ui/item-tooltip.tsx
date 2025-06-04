@@ -4,8 +4,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../components/ui/tooltip";
-import { Badge } from "../components/ui/badge";
+} from "./tooltip";
+import { Badge } from "./badge";
 import { cn } from "../../lib/utils";
 
 interface ItemTooltipProps {

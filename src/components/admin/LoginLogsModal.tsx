@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { Badge } from "../components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
+import { Badge } from "./badge";
 
 interface LoginLog {
   id: number;

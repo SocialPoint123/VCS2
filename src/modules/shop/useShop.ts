@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { shopService, type PurchaseRequest, type ShopItem, type UserItem } from "./shopService";
-import { useToast } from "../hooks/use-toast";
+import { useToast } from "../../hooks/use-toast";
 
 /**
  * Custom hooks สำหรับระบบร้านค้า
