@@ -9,8 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Link, useLocation } from "wouter";
 import { UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "../../lib/queryClient";
-import { useToast } from "../../hooks/use-toast";
+import { apiRequest } from "../lib/queryClient";
+import { useToast } from "../hooks/use-toast";
 
 const registerSchema = z.object({
   username: z.string()

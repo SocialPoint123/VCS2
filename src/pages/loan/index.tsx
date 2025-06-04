@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../.././card";
 import { Button } from "../.././button";
 import { Badge } from "../.././badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../.././tabs";
-import LoanForm from "../../components/loan/LoanForm";
+import LoanForm from "../components/loan/LoanForm";
 import { useUserLoanRequests } from "../../modules/loan/useLoan";
 import { ArrowLeft, DollarSign, Clock, CheckCircle, XCircle, AlertCircle, CreditCard } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";

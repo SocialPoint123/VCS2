@@ -20,10 +20,10 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Link } from "wouter";
-import ShopItem from "../../components/shop/ShopItem";
+import ShopItem from "../components/shop/ShopItem";
 import { useShopItems, useUserItems } from "../../modules/shop/useShop";
 import { useWallet } from "../../modules/wallet/useWallet";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { useAdminAuth } from "../hooks/useAdminAuth";
 
 /**
  * หน้าร้านค้าหลัก

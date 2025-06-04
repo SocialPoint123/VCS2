@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../.././dialog";
 import { Badge } from "../.././badge";
 import { Alert, AlertDescription } from "../.././alert";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 import { 
   Store, 
   Plus, 

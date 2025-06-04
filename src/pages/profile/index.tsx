@@ -15,10 +15,10 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Link } from "wouter";
-import ProfileCard from "../../components/profile/ProfileCard";
-import ProfilePostsList from "../../components/profile/ProfilePostsList";
+import ProfileCard from "../components/profile/ProfileCard";
+import ProfilePostsList from "../components/profile/ProfilePostsList";
 import { useUserProfile } from "../../modules/profile/useProfile";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { useAdminAuth } from "../hooks/useAdminAuth";
 
 /**
  * หน้าโปรไฟล์ผู้ใช้

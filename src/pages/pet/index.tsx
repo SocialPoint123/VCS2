@@ -14,10 +14,10 @@ import {
   Heart
 } from "lucide-react";
 import { Link } from "wouter";
-import PetStatus from "../../components/pet/PetStatus";
-import PetAction from "../../components/pet/PetAction";
+import PetStatus from "../components/pet/PetStatus";
+import PetAction from "../components/pet/PetAction";
 import { useUserPet, useCreatePet } from "../../modules/pet/usePet";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { useAdminAuth } from "../hooks/useAdminAuth";
 
 /**
  * หน้าสัตว์เลี้ยงหลัก

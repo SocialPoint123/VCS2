@@ -19,10 +19,10 @@ import {
   CheckCircle
 } from "lucide-react";
 import { Link } from "wouter";
-import WalletBalance from "../../components/wallet/WalletBalance";
-import CreditHistory from "../../components/wallet/CreditHistory";
-import TransferForm from "../../components/wallet/TransferForm";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
+import WalletBalance from "../components/wallet/WalletBalance";
+import CreditHistory from "../components/wallet/CreditHistory";
+import TransferForm from "../components/wallet/TransferForm";
+import { useAdminAuth } from "../hooks/useAdminAuth";
 import { useWallet, useTopUpRequest, useWithdrawRequest } from "../../modules/wallet/useWallet";
 
 /**

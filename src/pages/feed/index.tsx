@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import PostCard from "../../components/PostCard";
+import PostCard from "../components/PostCard";
 import { Button } from "../.././button";
 import { Input } from "../.././input";
 import { Textarea } from "../.././textarea";

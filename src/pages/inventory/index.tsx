@@ -5,7 +5,7 @@ import { Button } from "../.././button";
 import { Badge } from "../.././badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../.././tabs";
 import { Alert, AlertDescription } from "../.././alert";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 import { ItemTooltip } from "../.././item-tooltip";
 import { 
   Package, 
@@ -23,7 +23,7 @@ import {
   Settings
 } from "lucide-react";
 import { Link } from "wouter";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { useAdminAuth } from "../hooks/useAdminAuth";
 
 interface UserItem {
   id: number;

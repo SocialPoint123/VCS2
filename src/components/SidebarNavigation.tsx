@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../.././card";
 import { Button } from "../.././button";
 import { Avatar, AvatarFallback } from "../.././avatar";
 import { Badge } from "../.././badge";
-import ChatBox from "../../components/chat/ChatBox";
+import ChatBox from "../components/chat/ChatBox";
 import { usePrivateMessages, useSendMessage } from "../../modules/chat/useChat";
 import { ArrowLeft, MessageSquare, User, Crown } from "lucide-react";
 
