@@ -1,26 +1,27 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import SidebarNavigation from "@/components/SidebarNavigation";
-import { useTheme } from "@/hooks/useTheme";
-import { useAuth } from "@/hooks/useAuth";
-import NotFound from "@/pages/not-found";
-import LoginPage from "@/pages/login";
-import RegisterPage from "@/pages/register";
-import AdminDashboard from "@/pages/admin";
-import FeedPage from "@/pages/feed";
-import ViewPostPage from "@/pages/post/[id]";
-import PublicChatPage from "@/pages/chat";
-import PrivateChatPage from "@/pages/chat/[userId]";
-import LoanPage from "@/pages/loan";
-import ProfilePage from "@/pages/profile";
-import WalletPage from "@/pages/wallet";
-import ShopPage from "@/pages/shop";
-import PetPage from "@/pages/pet";
-import InventoryPage from "@/pages/inventory";
-import ShopManagement from "@/pages/admin/shop-management";
+import { Toaster } from "./components/ui/toaster";
+import { TooltipProvider } from "./components/ui/tooltip";
+import SidebarNavigation from "./components/SidebarNavigation";
+import { useTheme } from "./hooks/useTheme";
+import { useAuth } from "./hooks/useAuth";
+import NotFound from "./pages/not-found";
+import LoginPage from "./pages/login";
+import RegisterPage from "./pages/register";
+import AdminDashboard from "./pages/admin";
+import FeedPage from "./pages/feed";
+import ViewPostPage from "./pages/post/[id]";
+import PublicChatPage from "./pages/chat";
+import PrivateChatPage from "./pages/chat/[userId]";
+import LoanPage from "./pages/loan";
+import ProfilePage from "./pages/profile";
+import WalletPage from "./pages/wallet";
+import ShopPage from "./pages/shop";
+import PetPage from "./pages/pet";
+import InventoryPage from "./pages/inventory";
+import ShopManagement from "./pages/admin/shop-management";
 
 function AuthenticatedApp() {
   return (

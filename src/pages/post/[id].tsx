@@ -1,8 +1,8 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import PostCard from "@/components/PostCard";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import PostCard from "../../components/PostCard";
+import { Button } from "../../../components/ui/button";
+import { Card, CardContent } from "../../../components/ui/card";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 
 /**

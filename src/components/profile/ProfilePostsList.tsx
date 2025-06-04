@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Skeleton } from "../components/ui/skeleton";
 import { 
   MessageSquare, 
   ThumbsUp, 
@@ -16,8 +16,8 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
 import { Link } from "wouter";
-import { useUserPosts } from "@/modules/profile/useProfile";
-import type { UserPost } from "@/modules/profile/profileService";
+import { useUserPosts } from "../modules/profile/useProfile";
+import type { UserPost } from "../modules/profile/profileService";
 
 interface ProfilePostsListProps {
   userId: number;

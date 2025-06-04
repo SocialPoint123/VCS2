@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Skeleton } from "../../../components/ui/skeleton";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { 
   ArrowLeft, 
   User, 
@@ -15,10 +15,10 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Link } from "wouter";
-import ProfileCard from "@/components/profile/ProfileCard";
-import ProfilePostsList from "@/components/profile/ProfilePostsList";
-import { useUserProfile } from "@/modules/profile/useProfile";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import ProfileCard from "../../components/profile/ProfileCard";
+import ProfilePostsList from "../../components/profile/ProfilePostsList";
+import { useUserProfile } from "../../modules/profile/useProfile";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
 
 /**
  * หน้าโปรไฟล์ผู้ใช้

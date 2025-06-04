@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
 import { 
   ArrowLeft, 
   PawPrint, 
@@ -14,10 +14,10 @@ import {
   Heart
 } from "lucide-react";
 import { Link } from "wouter";
-import PetStatus from "@/components/pet/PetStatus";
-import PetAction from "@/components/pet/PetAction";
-import { useUserPet, useCreatePet } from "@/modules/pet/usePet";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import PetStatus from "../../components/pet/PetStatus";
+import PetAction from "../../components/pet/PetAction";
+import { useUserPet, useCreatePet } from "../../modules/pet/usePet";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
 
 /**
  * หน้าสัตว์เลี้ยงหลัก

@@ -1,11 +1,11 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import ChatBox from "@/components/chat/ChatBox";
-import { usePrivateMessages, useSendMessage } from "@/modules/chat/useChat";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
+import { Badge } from "../../../components/ui/badge";
+import ChatBox from "../../components/chat/ChatBox";
+import { usePrivateMessages, useSendMessage } from "../../modules/chat/useChat";
 import { ArrowLeft, MessageSquare, User, Crown } from "lucide-react";
 
 /**

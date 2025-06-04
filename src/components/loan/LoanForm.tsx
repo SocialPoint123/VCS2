@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
 import { Calculator, Clock, DollarSign, AlertTriangle, CheckCircle } from "lucide-react";
-import { useCreateLoan, useLoanEligibility } from "@/modules/loan/useLoan";
-import { loanService } from "@/modules/loan/loanService";
+import { useCreateLoan, useLoanEligibility } from "../modules/loan/useLoan";
+import { loanService } from "../modules/loan/loanService";
 
 interface LoanFormProps {
   userId: number;

@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Skeleton } from "../components/ui/skeleton";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { Separator } from "../components/ui/separator";
 import { 
   History, 
   ArrowUpRight, 
@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
-import { useTransactionHistory } from "@/modules/wallet/useWallet";
-import type { CreditTransaction } from "@/modules/wallet/walletService";
+import { useTransactionHistory } from "../modules/wallet/useWallet";
+import type { CreditTransaction } from "../modules/wallet/walletService";
 
 interface CreditHistoryProps {
   userId: number;

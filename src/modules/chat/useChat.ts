@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { chatService, type SendMessageData, type ChatMessage } from "./chatService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 
 /**
  * Custom hooks สำหรับระบบแชท

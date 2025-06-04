@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Skeleton } from "../components/ui/skeleton";
 import { 
   CreditCard, 
   TrendingUp, 
@@ -13,7 +13,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { useState } from "react";
-import { useWallet } from "@/modules/wallet/useWallet";
+import { useWallet } from "../modules/wallet/useWallet";
 
 interface WalletBalanceProps {
   userId: number;

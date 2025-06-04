@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
-import { ItemTooltip } from "@/components/ui/item-tooltip";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { useToast } from "../../hooks/use-toast";
+import { ItemTooltip } from "../../../components/ui/item-tooltip";
 import { 
   Package, 
   ArrowLeft, 
@@ -23,7 +23,7 @@ import {
   Settings
 } from "lucide-react";
 import { Link } from "wouter";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
 
 interface UserItem {
   id: number;

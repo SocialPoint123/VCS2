@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Progress } from "../components/ui/progress";
 import { 
   Heart, 
   Zap, 
@@ -10,9 +10,9 @@ import {
   Gift,
   Award
 } from "lucide-react";
-import { usePetStats } from "@/modules/pet/usePet";
-import { petService } from "@/modules/pet/petService";
-import type { Pet } from "@/modules/pet/petService";
+import { usePetStats } from "../modules/pet/usePet";
+import { petService } from "../modules/pet/petService";
+import type { Pet } from "../modules/pet/petService";
 
 interface PetStatusProps {
   pet: Pet;

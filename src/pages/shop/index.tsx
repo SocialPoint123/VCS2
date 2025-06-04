@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { Badge } from "../../../components/ui/badge";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
 import { 
   ArrowLeft, 
   Search, 
@@ -20,10 +20,10 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Link } from "wouter";
-import ShopItem from "@/components/shop/ShopItem";
-import { useShopItems, useUserItems } from "@/modules/shop/useShop";
-import { useWallet } from "@/modules/wallet/useWallet";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import ShopItem from "../../components/shop/ShopItem";
+import { useShopItems, useUserItems } from "../../modules/shop/useShop";
+import { useWallet } from "../../modules/wallet/useWallet";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
 
 /**
  * หน้าร้านค้าหลัก

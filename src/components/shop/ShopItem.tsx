@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { 
   ShoppingCart, 
   Check, 
@@ -13,9 +13,9 @@ import {
   Eye,
   CreditCard
 } from "lucide-react";
-import { usePurchaseItem, useCheckItemOwnership } from "@/modules/shop/useShop";
-import { useWallet } from "@/modules/wallet/useWallet";
-import type { ShopItem } from "@/modules/shop/shopService";
+import { usePurchaseItem, useCheckItemOwnership } from "../modules/shop/useShop";
+import { useWallet } from "../modules/wallet/useWallet";
+import type { ShopItem } from "../modules/shop/shopService";
 
 interface ShopItemProps {
   item: ShopItem;

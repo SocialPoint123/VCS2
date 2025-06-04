@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { postService, type CreatePostData, type CreateCommentData } from "./postService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 
 /**
  * Custom hooks สำหรับจัดการโพสต์โซเชียลมีเดีย
