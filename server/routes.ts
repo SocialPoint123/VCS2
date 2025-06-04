@@ -483,7 +483,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // เริ่มต้นเซิร์ฟเวอร์บนพอร์ต 5000
   const PORT = parseInt(process.env.PORT || '5000');
+  // สำหรับ development ใน Replit
   if (process.env.NODE_ENV !== 'production') {
+    // ตรวจสอบว่าพอร์ตถูกใช้งานแล้วหรือไม่
+    httpServer.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`Port ${PORT} is already in use, trying port ${PORT + 1}`);
+        httpServer.listen(PORT + 1, '0.0.0.0', () => {
+          console.log(`🚀 Server is running on http://0.0.0.0:${PORT + 1}`);
+        });
+      } else {
+        console.error('Server error:', err);
+      }
+    });
+    
     httpServer.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);
     });
