@@ -482,10 +482,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // เริ่มต้นเซิร์ฟเวอร์บนพอร์ต 5000
-  const PORT = process.env.PORT || 5000;
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);
-  });
+  const PORT = parseInt(process.env.PORT || '5000');
+  if (process.env.NODE_ENV !== 'production') {
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);
+    });
+  }
   // API สำหรับระบบแชท
   
   // ส่งข้อความใหม่
