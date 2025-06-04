@@ -41,7 +41,10 @@ export default function UserManagementTable({ onShowLoginLogs, onShowCreditLogs 
   // Mutation สำหรับอัปเดตสถานะผู้ใช้
   const updateStatusMutation = useMutation({
     mutationFn: async ({ userId, status }: { userId: number; status: string }) => {
-      const response = await apiRequest("PATCH", `/api/admin/users/${userId}/status`, { status });
+      const response = await apiRequest(`/api/admin/users/${userId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status })
+      });
       return response.json();
     },
     onSuccess: () => {
