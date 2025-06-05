@@ -1,0 +1,27 @@
+name: gg deployment
+
+on:
+  push:
+    branches:
+      - main # Or whatever branch you want to deploy from
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # Store your private key as a GitHub secret
+
+    - name: Deploy via SCP
+      run: |
+        scp -r ./your-app-directory/* user@your-server-ip:/var/www/html/your-website-directory/
+      env:
+        SSH_HOST: your-server-ip
+        SSH_USER: your-username
+        DEPLOY_PATH: /var/www/html/your-website-directory/
