@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "clean": "rm -rf dist",
-    "dev": "vite",
-    "build": "npm run clean && vite build",
-    "preview": "vite preview"
-  }
-}
